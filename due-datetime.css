@@ -1,0 +1,206 @@
+/* ══════════════════════════════════════════════════════════════
+   NEXA — Due Date + Time Styles  |  due-datetime.css  v1.0
+   Import AFTER style.css, sync-styles.css, reminders.css
+══════════════════════════════════════════════════════════════ */
+
+/* ── Time input in creation bar ── */
+.due-time-wrap {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.due-time-input {
+  font-family: var(--fm);
+  font-size: .7rem;
+  background: var(--sf);
+  border: 1px solid var(--bd2);
+  border-radius: var(--rs);
+  color: var(--tx2);
+  padding: 3px 8px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color var(--tr), box-shadow var(--tr);
+  color-scheme: dark;
+  min-width: 88px;
+}
+[data-theme="light"] .due-time-input { color-scheme: light; }
+.due-time-input:focus {
+  border-color: var(--ac);
+  box-shadow: 0 0 0 2px var(--ac-g);
+}
+
+/* ── Enhanced due badge on task cards ── */
+.due-badge.has-due {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: .66rem;
+  font-weight: 500;
+  padding: 2px 7px;
+  border-radius: 100px;
+  border: 1px solid transparent;
+  background: var(--sf2);
+  border-color: var(--bd2);
+  color: var(--tx2);
+  letter-spacing: .01em;
+  white-space: nowrap;
+  transition: background var(--tr), border-color var(--tr), color var(--tr);
+}
+.due-badge-icon { font-size: .7rem; line-height: 1; }
+.due-badge-text { max-width: 140px; overflow: hidden; text-overflow: ellipsis; }
+
+/* Status colour variants on the badge wrapper */
+.due-status-color-upcoming {
+  background: rgba(99,179,237,.07);
+  border-color: rgba(99,179,237,.2);
+  color: #63b3ed;
+}
+.due-status-color-soon {
+  background: rgba(251,146,60,.10);
+  border-color: rgba(251,146,60,.28);
+  color: #fb923c;
+}
+.due-status-color-overdue {
+  background: rgba(248,113,113,.10);
+  border-color: rgba(248,113,113,.28);
+  color: var(--hi);
+}
+.due-status-color-done {
+  background: var(--sf2);
+  border-color: var(--bd);
+  color: var(--tx3);
+  opacity: .6;
+}
+
+/* ── Status pill inside the badge ── */
+.due-status-pill {
+  font-size: .58rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  padding: 1px 5px;
+  border-radius: 100px;
+  line-height: 1.4;
+  flex-shrink: 0;
+}
+.due-status-upcoming { background: rgba(99,179,237,.14);  color: #63b3ed;   }
+.due-status-soon     { background: rgba(251,146,60,.16);  color: #fb923c;   }
+.due-status-overdue  { background: rgba(248,113,113,.16); color: var(--hi); }
+.due-status-done     { display: none; }
+
+/* Overdue task: existing .overdue class on <li> still applies from style.css */
+
+/* ── Inline edit date/time row ── */
+.due-edit-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  padding: 10px 12px;
+  background: var(--sf);
+  border: 1px solid var(--bd2);
+  border-radius: var(--rs);
+  animation: due-edit-in .18s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes due-edit-in {
+  from { opacity: 0; transform: translateY(-4px) scale(.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.due-edit-field {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex: 1;
+  min-width: 130px;
+}
+.due-edit-label {
+  font-size: .65rem;
+  color: var(--tx3);
+  white-space: nowrap;
+  flex-shrink: 0;
+  letter-spacing: .01em;
+}
+
+/* Reuse .date-input styles for the edit row inputs */
+.due-edit-date,
+.due-edit-time {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Save / Clear buttons */
+.due-edit-save,
+.due-edit-clear {
+  font-family: var(--fd);
+  font-size: .68rem;
+  font-weight: 500;
+  padding: 4px 11px;
+  border-radius: var(--rs);
+  cursor: pointer;
+  transition: all var(--tr);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.due-edit-save {
+  background: var(--ac);
+  border: 1px solid transparent;
+  color: #fff;
+}
+.due-edit-save:hover { background: var(--ac2); }
+
+.due-edit-clear {
+  background: transparent;
+  border: 1px solid var(--bd2);
+  color: var(--tx3);
+}
+.due-edit-clear:hover {
+  background: var(--sf2);
+  border-color: var(--bd3);
+  color: var(--tx);
+}
+
+/* ══ RESPONSIVE ════════════════════════════════════ */
+
+/* Mobile */
+@media (max-width: 767px) {
+  /* Stack time input below date on very small screens */
+  .input-meta-right {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .due-time-wrap {
+    flex-shrink: 0;
+  }
+  .due-time-input {
+    min-width: 80px;
+  }
+
+  /* Badge: truncate on narrow cards */
+  .due-badge-text {
+    max-width: 90px;
+  }
+  .due-status-pill {
+    display: none; /* hide pill on very small cards to save space */
+  }
+
+  /* Edit row: two columns */
+  .due-edit-row {
+    gap: 6px;
+    padding: 8px 10px;
+  }
+  .due-edit-field {
+    min-width: 110px;
+  }
+}
+
+/* Tablet */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .due-badge-text { max-width: 110px; }
+}
+
+/* Desktop: show everything */
+@media (min-width: 1024px) {
+  .due-badge-text { max-width: 160px; }
+}

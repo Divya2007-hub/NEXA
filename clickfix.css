@@ -1,0 +1,112 @@
+/* ══════════════════════════════════════════════════════════════
+   NEXA — Clickability Fix  |  clickfix.css
+   Load LAST, after all other stylesheets.
+   Fixes: Feedback form + Quick Action buttons not clickable.
+══════════════════════════════════════════════════════════════ */
+
+/* ── 1. Remove overflow:hidden from ALL settings cards ── */
+.settings-card,
+.settings-card *,
+#fb-main-card,
+.sc-body {
+  overflow: visible !important;
+}
+
+/* ── 2. Ensure cards are positioned so z-index works ── */
+.settings-card {
+  position: relative !important;
+}
+
+/* ── 3. Remove any pseudo-element overlays that block clicks ── */
+.settings-card::before {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+/* ── 4. Force all interactive elements inside settings to be clickable ── */
+.settings-card button,
+.settings-card input,
+.settings-card textarea,
+.settings-card select,
+.settings-card a,
+.fb-star,
+.fb-mood-btn,
+.fb-submit-btn,
+.fb-quick-btn,
+.fb-support-link,
+.fb-textarea,
+#fb-message,
+#fb-submit-btn,
+#fb-bug-btn,
+#fb-feature-btn,
+#fb-stars-row button {
+  pointer-events: all !important;
+  cursor: pointer !important;
+  position: relative !important;
+  z-index: 10 !important;
+}
+
+/* ── 5. textarea should use text cursor ── */
+.fb-textarea,
+#fb-message {
+  cursor: text !important;
+}
+
+/* ── 6. Disabled submit button keeps not-allowed ── */
+#fb-submit-btn:disabled,
+.fb-submit-btn:not(.ready) {
+  cursor: not-allowed !important;
+}
+
+/* ── 7. Ensure the settings grid itself doesn't clip ── */
+.settings-grid {
+  overflow: visible !important;
+}
+
+/* ── 8. Tab panel overflow must not clip ── */
+#tab-settings {
+  overflow: visible !important;
+}
+
+/* ── 9. Quick action buttons specific fix ── */
+#fb-bug-btn,
+#fb-feature-btn {
+  pointer-events: all !important;
+  cursor: pointer !important;
+  z-index: 20 !important;
+  position: relative !important;
+}
+
+/* ── 10. Support links ── */
+.fb-support-link {
+  pointer-events: all !important;
+  cursor: pointer !important;
+  z-index: 20 !important;
+  position: relative !important;
+}
+
+/* ── 11. Star rating row ── */
+#fb-stars-row {
+  position: relative !important;
+  z-index: 10 !important;
+}
+
+.fb-star {
+  pointer-events: all !important;
+  cursor: pointer !important;
+  position: relative !important;
+  z-index: 15 !important;
+}
+
+/* ── 12. Mood buttons ── */
+.fb-mood-row {
+  position: relative !important;
+  z-index: 10 !important;
+}
+
+.fb-mood-btn {
+  pointer-events: all !important;
+  cursor: pointer !important;
+  position: relative !important;
+  z-index: 15 !important;
+}

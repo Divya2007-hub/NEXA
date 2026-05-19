@@ -1,0 +1,459 @@
+/* ══════════════════════════════════════════════════════════════
+   NEXA — Task Reminders  |  reminders.css  v2.0
+   Import AFTER style.css, sync-styles.css, responsive-fix.css
+══════════════════════════════════════════════════════════════ */
+
+/* ── Reminder bell button in task actions ── */
+.reminder-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--rs);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--tx3);
+  font-size: 14px;
+  cursor: pointer;
+  transition: color var(--tr), background var(--tr), border-color var(--tr),
+              transform var(--tr-spring), opacity var(--tr);
+  flex-shrink: 0;
+  line-height: 1;
+  padding: 0;
+}
+.reminder-btn:hover:not(.no-due) {
+  background: var(--sf2);
+  color: var(--tx);
+  border-color: var(--bd2);
+}
+
+/* Active / has-reminder state */
+.reminder-btn.has-reminder {
+  color: var(--ac);
+  background: var(--ac-g2);
+  border-color: rgba(var(--ac-rgb), .22);
+}
+.reminder-btn.has-reminder:hover {
+  background: var(--ac-g);
+  border-color: rgba(var(--ac-rgb), .38);
+}
+
+/* No due date — visually disabled */
+.reminder-btn.no-due {
+  opacity: 0.38 !important;
+  cursor: not-allowed !important;
+  pointer-events: all; /* keep pointer so tooltip/click fires */
+}
+
+/* Bell ring animation when reminder is active */
+.reminder-btn.has-reminder .bell-icon {
+  display: inline-block;
+  animation: bell-ring 3.6s ease-in-out infinite;
+  transform-origin: 50% 0%;
+}
+@keyframes bell-ring {
+  0%,85%,100% { transform: rotate(0deg); }
+  87%         { transform: rotate(14deg); }
+  89%         { transform: rotate(-12deg); }
+  91%         { transform: rotate(10deg); }
+  93%         { transform: rotate(-8deg); }
+  95%         { transform: rotate(4deg); }
+}
+
+/* ── Reminder popover ── */
+.reminder-popover {
+  position: fixed;
+  z-index: 9000;
+  background: var(--glass);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  border: 1px solid var(--glass-bd2);
+  border-radius: var(--rl);
+  box-shadow: var(--shadow), 0 0 0 1px rgba(255,255,255,.04) inset;
+  padding: 16px;
+  width: 270px;
+  max-width: calc(100vw - 24px);
+  box-sizing: border-box;
+
+  opacity: 0;
+  transform: translateY(-6px) scale(.97);
+  pointer-events: none;
+  transition: opacity .18s cubic-bezier(.4,0,.2,1),
+              transform .22s cubic-bezier(.34,1.56,.64,1);
+}
+.reminder-popover.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: all;
+}
+
+/* header row */
+.rp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.rp-title {
+  font-size: .72rem;
+  font-weight: 600;
+  color: var(--tx2);
+  text-transform: uppercase;
+  letter-spacing: .07em;
+}
+.rp-close {
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--tx3);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+  transition: background var(--tr), color var(--tr);
+  line-height: 1;
+  padding: 0;
+}
+.rp-close:hover { background: var(--sf3); color: var(--tx); }
+
+/* task name preview */
+.rp-task-name {
+  font-size: .78rem;
+  color: var(--tx);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 10px;
+  padding: 6px 9px;
+  background: var(--sf2);
+  border-radius: var(--rs);
+  border: 1px solid var(--bd);
+}
+
+/* no due date */
+.rp-no-due {
+  font-size: .78rem;
+  color: var(--tx2);
+  text-align: center;
+  padding: 10px 0 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.5;
+}
+.rp-no-due-icon { font-size: 1.6rem; }
+
+/* due time row */
+.rp-due-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.rp-due-label {
+  font-size: .68rem;
+  color: var(--tx3);
+  letter-spacing: .01em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* custom minutes row */
+.rp-custom-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  transition: opacity .18s ease, max-height .22s ease;
+  max-height: 48px;
+  overflow: hidden;
+}
+.rp-custom-row.hidden {
+  max-height: 0;
+  opacity: 0;
+  pointer-events: none;
+  margin-bottom: 0;
+}
+
+.rp-time-input,
+.rp-custom-mins {
+  font-family: var(--fm);
+  font-size: .72rem;
+  background: var(--sf);
+  border: 1px solid var(--bd2);
+  border-radius: var(--rs);
+  color: var(--tx);
+  padding: 4px 8px;
+  flex: 1;
+  min-width: 0;
+  outline: none;
+  cursor: pointer;
+  transition: border-color var(--tr), box-shadow var(--tr);
+  color-scheme: dark;
+  box-sizing: border-box;
+}
+[data-theme="light"] .rp-time-input,
+[data-theme="light"] .rp-custom-mins { color-scheme: light; }
+.rp-time-input:focus,
+.rp-custom-mins:focus {
+  border-color: var(--ac);
+  box-shadow: 0 0 0 2px var(--ac-g);
+}
+
+/* offset chips */
+.rp-offset-label {
+  font-size: .68rem;
+  color: var(--tx3);
+  letter-spacing: .01em;
+  margin-bottom: 7px;
+}
+.rp-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 12px;
+}
+.rp-chip {
+  font-family: var(--fd);
+  font-size: .68rem;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 100px;
+  border: 1px solid var(--bd2);
+  background: var(--sf);
+  color: var(--tx2);
+  cursor: pointer;
+  transition: all var(--tr);
+  white-space: nowrap;
+  line-height: 1.3;
+}
+.rp-chip:hover {
+  background: var(--sf2);
+  color: var(--tx);
+  border-color: var(--bd3);
+}
+.rp-chip.selected {
+  background: var(--ac-g);
+  border-color: rgba(var(--ac-rgb), .3);
+  color: var(--ac2);
+}
+
+/* action buttons */
+.rp-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+.rp-btn {
+  flex: 1;
+  font-family: var(--fd);
+  font-size: .72rem;
+  font-weight: 500;
+  padding: 7px 10px;
+  border-radius: var(--rs);
+  border: 1px solid var(--bd2);
+  background: var(--sf2);
+  color: var(--tx2);
+  cursor: pointer;
+  transition: all var(--tr);
+  letter-spacing: -.01em;
+}
+.rp-btn:hover { background: var(--sf3); color: var(--tx); border-color: var(--bd3); }
+.rp-btn.primary {
+  background: var(--ac);
+  border-color: transparent;
+  color: #fff;
+}
+.rp-btn.primary:hover { background: var(--ac2); }
+.rp-btn.danger {
+  background: rgba(248,113,113,.12);
+  border-color: rgba(248,113,113,.22);
+  color: var(--hi);
+}
+.rp-btn.danger:hover { background: rgba(248,113,113,.2); }
+
+/* permission denied notice */
+.rp-denied-notice {
+  font-size: .7rem;
+  color: var(--tx3);
+  text-align: center;
+  padding: 6px 0 10px;
+  line-height: 1.5;
+}
+.rp-denied-link {
+  color: var(--ac);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+/* permission banner */
+.reminder-permission-banner {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(12px);
+  background: var(--glass);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  border: 1px solid var(--glass-bd2);
+  border-radius: var(--rl);
+  box-shadow: var(--shadow);
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 8800;
+  max-width: calc(100vw - 32px);
+  width: 420px;
+  box-sizing: border-box;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .22s ease, transform .26s cubic-bezier(.34,1.56,.64,1);
+}
+.reminder-permission-banner.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: all;
+}
+.rpb-icon  { font-size: 1.3rem; flex-shrink: 0; }
+.rpb-text  { flex: 1; min-width: 0; }
+.rpb-title { font-size: .78rem; font-weight: 600; color: var(--tx); margin-bottom: 2px; }
+.rpb-sub   { font-size: .68rem; color: var(--tx2); }
+.rpb-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.rpb-btn {
+  font-family: var(--fd);
+  font-size: .7rem;
+  font-weight: 500;
+  padding: 5px 11px;
+  border-radius: var(--rs);
+  border: 1px solid var(--bd2);
+  background: var(--sf2);
+  color: var(--tx2);
+  cursor: pointer;
+  transition: all var(--tr);
+  white-space: nowrap;
+}
+.rpb-btn:hover { background: var(--sf3); color: var(--tx); }
+.rpb-btn.allow {
+  background: var(--ac);
+  border-color: transparent;
+  color: #fff;
+}
+.rpb-btn.allow:hover { background: var(--ac2); }
+
+/* ── Reminder badge on task item ── */
+.task-reminder-badge {
+  font-size: .62rem;
+  font-weight: 500;
+  color: var(--ac2);
+  background: var(--ac-g2);
+  border: 1px solid rgba(var(--ac-rgb), .18);
+  border-radius: 100px;
+  padding: 1px 7px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  letter-spacing: .01em;
+  transition: opacity var(--tr);
+}
+.rbd-time {
+  opacity: .75;
+  font-size: .6rem;
+  font-weight: 400;
+}
+
+/* ── Task highlight pulse (notification click) ── */
+@keyframes highlight-pulse {
+  0%   { box-shadow: 0 0 0 0   rgba(var(--ac-rgb), .5); }
+  40%  { box-shadow: 0 0 0 8px rgba(var(--ac-rgb), .2); }
+  100% { box-shadow: 0 0 0 0   rgba(var(--ac-rgb), 0);  }
+}
+.task-item.highlight-pulse {
+  animation: highlight-pulse 1.8s ease forwards;
+  outline: 1px solid rgba(var(--ac-rgb), .35);
+  border-radius: var(--r);
+}
+
+/* ── Settings page section ── */
+.reminder-settings-card {
+  background: var(--sf);
+  border: 1px solid var(--bd);
+  border-radius: var(--r);
+  padding: 18px 20px;
+  margin-top: 4px;
+}
+.reminder-settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--bd);
+}
+.reminder-settings-row:last-child { border-bottom: none; }
+.rs-label { font-size: .8rem;  color: var(--tx);  font-weight: 500; }
+.rs-sub   { font-size: .7rem;  color: var(--tx3); margin-top: 2px; }
+.rs-perm-status {
+  font-size: .7rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 100px;
+  border: 1px solid transparent;
+}
+.rs-perm-status.granted { color: #4ade80; background: rgba(34,197,94,.1);  border-color: rgba(34,197,94,.25); }
+.rs-perm-status.denied  { color: var(--hi); background: var(--hi-b); border-color: rgba(248,113,113,.25); }
+.rs-perm-status.default { color: var(--tx2); background: var(--sf2); border-color: var(--bd2); }
+.rs-action-btn {
+  font-family: var(--fd);
+  font-size: .72rem;
+  font-weight: 500;
+  padding: 5px 12px;
+  border-radius: var(--rs);
+  border: 1px solid rgba(var(--ac-rgb), .3);
+  background: var(--ac-g2);
+  color: var(--ac);
+  cursor: pointer;
+  transition: all var(--tr);
+  white-space: nowrap;
+}
+.rs-action-btn:hover { background: var(--ac-g); border-color: rgba(var(--ac-rgb), .45); }
+.rs-action-btn:disabled { opacity: .45; cursor: not-allowed; }
+
+/* ══ RESPONSIVE ══════════════════════════════════════ */
+
+/* Mobile */
+@media (max-width: 767px) {
+  .reminder-popover {
+    width: calc(100vw - 24px);
+    max-width: 320px;
+  }
+  .reminder-permission-banner {
+    bottom: 80px;
+    flex-wrap: wrap;
+    width: calc(100vw - 32px);
+  }
+  .rpb-actions {
+    width: 100%;
+  }
+  .rpb-btn { flex: 1; text-align: center; }
+
+  .reminder-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 15px;
+  }
+
+  .rp-chips { gap: 4px; }
+  .rp-chip  { font-size: .65rem; padding: 3px 8px; }
+}
+
+/* Tablet */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .reminder-popover { width: 260px; }
+}
+
+/* Desktop / Laptop — already fine at default 270px */

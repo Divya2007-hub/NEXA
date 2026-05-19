@@ -1,0 +1,602 @@
+/* ══════════════════════════════════════════════════════════════
+   NEXA — Responsive Layout Fix  v2.1
+   1. Sync badge: out of fixed-center, into sidebar footer / topbar
+   2. TRUE fullscreen desktop: flex row fills 100vw × 100vh exactly
+   3. Responsive breakpoints: mobile → tablet → desktop → wide
+   Load AFTER style.css and sync-styles.css
+══════════════════════════════════════════════════════════════ */
+
+
+/* ═══════════════════════════════════════════════════════════
+   PART 1 — SYNC BADGE: remove fixed floating, make it inline
+═══════════════════════════════════════════════════════════ */
+
+.autosave-indicator {
+  position: static !important;
+  transform: none !important;
+  left: auto !important;
+  top: auto !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 100px;
+  font-family: var(--fm);
+  font-size: .62rem;
+  font-weight: 500;
+  letter-spacing: .02em;
+  white-space: nowrap;
+  background: var(--sf);
+  border: 1px solid var(--bd2);
+  color: var(--tx2);
+  transition: background .3s ease, color .3s ease, border-color .3s ease;
+  cursor: default;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.autosave-indicator.sync-synced  { background: rgba(34,197,94,.08) !important; border-color: rgba(34,197,94,.22) !important; color: #4ade80 !important; }
+.autosave-indicator.sync-syncing { background: rgba(234,179,8,.08) !important; border-color: rgba(234,179,8,.22) !important; color: #fbbf24 !important; }
+.autosave-indicator.sync-offline { background: rgba(239,68,68,.08) !important; border-color: rgba(239,68,68,.22) !important; color: #f87171 !important; }
+
+@media (min-width: 769px) {
+  .sidebar-footer { flex-wrap: wrap; gap: 6px; padding: 10px 12px; }
+  #autosave-indicator { order: -1; flex: 0 0 auto; font-size: .6rem; padding: 3px 8px; background: transparent; border-color: transparent; }
+}
+@media (max-width: 768px) {
+  #autosave-indicator { font-size: .6rem; padding: 3px 7px; min-width: 72px; justify-content: center; }
+}
+@media (max-width: 380px) {
+  #autosave-indicator .autosave-label { display: none; }
+  #autosave-indicator { min-width: 20px; padding: 4px 5px; }
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   PART 2 — TRUE FULLSCREEN DESKTOP
+═══════════════════════════════════════════════════════════ */
+
+html, body { width: 100%; height: 100%; overflow: hidden; max-width: 100%; }
+
+#app-wrapper { position: fixed; inset: 0; width: 100vw; height: 100vh; overflow: hidden; }
+
+.app-shell { position: relative; z-index: 1; width: 100%; height: 100vh; display: flex; flex-direction: row; overflow: hidden; }
+
+@media (min-width: 769px) {
+  .sidebar {
+    position: relative !important;
+    top: auto !important; left: auto !important; bottom: auto !important;
+    transform: none !important;
+    height: 100vh !important;
+    flex-shrink: 0;
+    z-index: 10;
+  }
+
+  .main-content {
+    flex: 1 1 0%;
+    width: 0;
+    min-width: 0;
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    max-width: none !important;
+    margin-left: 0 !important;
+    scroll-behavior: smooth;
+  }
+
+  .input-bar { position: fixed; bottom: 0; right: 0; z-index: 100; }
+}
+
+.tab-panel { padding: 24px 32px 110px; width: 100%; box-sizing: border-box; max-width: none !important; }
+@media (min-width: 1024px) { .tab-panel { padding: 28px 40px 110px; } }
+@media (min-width: 1440px) { .main-content { max-width: none !important; } .tab-panel { padding: 32px 48px 110px; } }
+.input-row, .input-meta { max-width: none; }
+
+
+/* ═══════════════════════════════════════════════════════════
+   PART 3 — SIDEBAR WIDTH TIERS + INPUT BAR LEFT
+═══════════════════════════════════════════════════════════ */
+
+@media (min-width: 769px)  and (max-width: 1023px)  { :root{--sidebar-w:220px} .sidebar{width:220px!important} .input-bar{left:220px} }
+@media (min-width: 1024px) and (max-width: 1279px)  { :root{--sidebar-w:232px} .sidebar{width:232px!important} .input-bar{left:232px} }
+@media (min-width: 1280px) and (max-width: 1439px)  { :root{--sidebar-w:260px} .sidebar{width:260px!important} .input-bar{left:260px} }
+@media (min-width: 1440px)                           { :root{--sidebar-w:280px} .sidebar{width:280px!important} .input-bar{left:280px} }
+
+
+/* ═══════════════════════════════════════════════════════════
+   PART 4 — MOBILE (max-width: 768px)
+═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  html, body { overflow: auto; height: auto; min-height: 100vh; }
+  #app-wrapper { position: relative; inset: auto; width: 100%; height: auto; min-height: 100vh; overflow: visible; }
+  .app-shell { flex-direction: column; height: auto; min-height: 100vh; overflow: visible; }
+
+  /* Off-canvas sidebar */
+  .sidebar { position: fixed !important; top:0!important; left:0!important; bottom:0!important; width: min(280px,85vw)!important; height:100vh!important; transform: translateX(-100%)!important; z-index:300!important; transition: transform var(--tr-s)!important; }
+  .sidebar.open { transform: translateX(0)!important; }
+  .sidebar-close { display: flex !important; }
+  .sidebar-overlay.visible { left: 0 !important; display: block; }
+
+  /* Topbar */
+  .topbar { display:flex!important; position:sticky; top:0; z-index:180; height:var(--topbar-h); padding:0 12px; gap:8px; overflow:hidden; flex-shrink:0; }
+  .topbar-title { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:.9rem; }
+  .topbar-actions { flex-shrink:0; display:flex; align-items:center; gap:5px; }
+
+  /* Main */
+  .main-content { margin-left:0!important; height:auto!important; min-height:calc(100vh - var(--topbar-h)); overflow-y:visible; overflow-x:hidden; width:100%; max-width:100%; }
+  .tab-panel { padding: 16px 14px 180px; }
+
+  /* Input bar */
+  .input-bar { position:fixed!important; bottom:0!important; left:0!important; right:0!important; padding:10px 14px max(12px,env(safe-area-inset-bottom,12px)); z-index:150; }
+  .input-row { gap:6px; }
+  .task-input { height:38px; font-size:.8rem; }
+  .add-btn { width:38px; height:38px; font-size:1.2rem; }
+  .input-meta { margin-top:6px; flex-wrap:wrap; gap:6px; }
+  .priority-chips { flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; gap:4px; max-width:60vw; }
+  .priority-chips::-webkit-scrollbar { display:none; }
+  .p-chip { flex-shrink:0; font-size:.65rem; padding:3px 8px; }
+  .input-meta-right { flex-shrink:0; flex-wrap:nowrap; gap:6px; }
+  .date-label { display:none; }
+
+  /* Filter bar */
+  .filter-bar { display:flex!important; flex-wrap:nowrap!important; overflow-x:auto!important; -webkit-overflow-scrolling:touch; scrollbar-width:none; gap:5px; padding-bottom:4px; mask-image:linear-gradient(to right,transparent 0,black 12px,black calc(100% - 12px),transparent 100%); -webkit-mask-image:linear-gradient(to right,transparent 0,black 12px,black calc(100% - 12px),transparent 100%); }
+  .filter-bar::-webkit-scrollbar { display:none; }
+  .filter-btn { flex-shrink:0; white-space:nowrap; font-size:.7rem; padding:5px 11px; }
+
+  /* Stats pill */
+  .stats-pill { font-size:.62rem; padding:3px 8px; }
+  .stats-pill .sl { display:none; }
+
+  /* Task overflow */
+  .task-item { min-width:0; overflow:hidden; }
+  .task-text { word-break:break-word; overflow-wrap:anywhere; }
+
+  /* Floating elements */
+  .undo-banner { bottom:100px; left:12px; right:12px; max-width:none; }
+  .toast-container { bottom:110px; right:12px; left:12px; max-width:none; }
+  .bulk-bar { bottom:100px; }
+
+  /* Grids */
+  .dash-grid { grid-template-columns:1fr 1fr; gap:8px; }
+  .analytics-row { grid-template-columns:1fr 1fr; gap:8px; }
+  .focus-layout { grid-template-columns:1fr!important; gap:16px; }
+  .settings-grid { grid-template-columns:1fr; }
+  .cal-panels { grid-template-columns:1fr; }
+  .pomo-ring-wrap { max-width:200px; margin:0 auto; }
+  .weekly-chart { overflow-x:auto; }
+  .heatmap-wrap { overflow-x:auto; }
+}
+
+@media (max-width: 420px) {
+  .tab-panel { padding:12px 10px 180px; }
+  .topbar { padding:0 10px; gap:6px; }
+  .filter-btn { font-size:.65rem; padding:4px 9px; }
+  .input-bar { padding:8px 10px max(10px,env(safe-area-inset-bottom,10px)); }
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   PART 5 — TABLET (769 – 1023px)
+═══════════════════════════════════════════════════════════ */
+
+@media (min-width: 769px) and (max-width: 1023px) {
+  .topbar { display:none!important; }
+  .tab-panel { padding:20px 24px 110px; }
+  .settings-grid { grid-template-columns:1fr 1fr; }
+  .cal-panels { grid-template-columns:1fr 1fr; }
+  .focus-layout { grid-template-columns:1fr!important; }
+  .analytics-row { grid-template-columns:repeat(3,1fr); }
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   PART 6 — DESKTOP (1024px+)
+═══════════════════════════════════════════════════════════ */
+
+@media (min-width: 1024px) {
+  .topbar { display:none!important; }
+  .focus-layout { display:grid; grid-template-columns:auto 1fr; gap:24px; align-items:start; }
+  .settings-grid { grid-template-columns:1fr 1fr; }
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   PART 7 — OVERFLOW GUARD
+═══════════════════════════════════════════════════════════ */
+
+*, *::before, *::after { box-sizing: border-box; }
+.app-shell, .main-content, #app-wrapper { min-width: 0; }
+.task-text, .task-body { min-width:0; word-break:break-word; overflow-wrap:anywhere; }
+
+
+/* ═══════════════════════════════════════════════════════════
+   PART 8 — COMMAND PALETTE: force theme-aware colours
+   On light theme the palette background was staying dark
+   because it uses a hardcoded rgba(16,18,26,.97). Override
+   to use CSS variables so it respects the active theme.
+═══════════════════════════════════════════════════════════ */
+
+.cmd-overlay {
+  background: rgba(0,0,0,.45);
+}
+
+.cmd-palette {
+  background: var(--sf) !important;
+  border-color: var(--bd2) !important;
+}
+
+.cmd-header {
+  border-bottom-color: var(--bd) !important;
+  background: var(--sf) !important;
+}
+
+.cmd-input {
+  color: var(--tx) !important;
+  background: transparent !important;
+}
+
+.cmd-result-item {
+  color: var(--tx2) !important;
+  border-bottom-color: var(--bd) !important;
+}
+
+.cmd-result-item:hover,
+.cmd-result-item.focused {
+  background: var(--ac-g) !important;
+  color: var(--tx) !important;
+}
+
+.cmd-footer {
+  background: var(--bg2) !important;
+  border-top-color: var(--bd) !important;
+  color: var(--tx3) !important;
+}
+
+.cmd-footer kbd {
+  background: var(--sf2) !important;
+  border-color: var(--bd2) !important;
+  color: var(--tx2) !important;
+}
+
+.cmd-esc {
+  background: var(--sf2) !important;
+  border-color: var(--bd2) !important;
+  color: var(--tx3) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PART 9 — MOBILE: ensure app fills full viewport width
+   The white gap on the right side is caused by the app shell
+   not stretching — extra insurance rules.
+═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  html, body, #app-wrapper, .app-shell, .main-content {
+    width: 100% !important;
+    max-width: 100vw !important;
+  }
+
+  /* Topbar must span full width */
+  .topbar {
+    width: 100% !important;
+    max-width: 100vw !important;
+    left: 0 !important;
+    right: 0 !important;
+  }
+
+  /* Input bar full width insurance */
+  .input-bar {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    left: 0 !important;
+    right: 0 !important;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   PART 10 — MOBILE SIDEBAR: visible, clickable, above overlay
+═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+
+  /* Sidebar: highest z-index, solid background, full contrast */
+  .sidebar {
+    z-index: 500 !important;
+    background: #0d0f16 !important;
+    box-shadow: 4px 0 32px rgba(0,0,0,.7) !important;
+    pointer-events: all !important;
+  }
+  [data-theme="light"] .sidebar {
+    background: #ffffff !important;
+    box-shadow: 4px 0 32px rgba(0,0,0,.18) !important;
+  }
+
+  /* Overlay: covers only the RIGHT side (after sidebar), blurred, BELOW sidebar */
+  .sidebar-overlay {
+    z-index: 400 !important;
+    pointer-events: none;
+  }
+  .sidebar-overlay.visible {
+    display: block !important;
+    pointer-events: all !important;
+    /* Start AFTER the sidebar so sidebar stays fully tappable */
+    left: min(280px, 85vw) !important;
+    right: 0 !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    background: rgba(0,0,0,.55) !important;
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
+  }
+
+  /* Nav items: large touch targets, always interactive */
+  .nav-item {
+    min-height: 48px !important;
+    touch-action: manipulation !important;
+    pointer-events: all !important;
+    position: relative !important;
+    z-index: 10 !important;
+    cursor: pointer !important;
+  }
+
+  /* All sidebar children: always interactive */
+  .sidebar * {
+    pointer-events: all !important;
+  }
+
+  /* Sidebar header, stats, footer: always visible */
+  .sidebar-header,
+  .sidebar-stats,
+  .sidebar-nav,
+  .sidebar-footer,
+  .sidebar-user-chip,
+  .sidebar-guest-chip {
+    pointer-events: all !important;
+    position: relative !important;
+    z-index: 5 !important;
+  }
+
+  /* Sidebar close button: easy to tap */
+  .sidebar-close {
+    display: flex !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+    pointer-events: all !important;
+    z-index: 20 !important;
+    position: relative !important;
+  }
+
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   PART 11 — SMOOTH SIDEBAR ANIMATION + VISIBLE DARK THEME
+═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+
+  /* ── Sidebar: smooth spring-like slide animation ── */
+  .sidebar {
+    transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1),
+                box-shadow 0.32s ease !important;
+    will-change: transform;
+    /* Lighter dark background so content is clearly visible */
+    background: #13151f !important;
+    border-right: 1px solid rgba(255,255,255,.1) !important;
+  }
+
+  /* Light theme sidebar */
+  [data-theme="light"] .sidebar {
+    background: #f8f9fc !important;
+    border-right: 1px solid rgba(0,0,0,.1) !important;
+  }
+
+  /* ── Overlay: smooth fade in/out ── */
+  .sidebar-overlay {
+    transition: opacity 0.28s ease,
+                backdrop-filter 0.28s ease !important;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .sidebar-overlay.visible {
+    opacity: 1 !important;
+    pointer-events: all !important;
+    background: rgba(0,0,0,.38) !important;   /* lighter — content still readable */
+    backdrop-filter: blur(3px) !important;
+    -webkit-backdrop-filter: blur(3px) !important;
+  }
+
+  /* ── Nav items: smooth hover/active feedback ── */
+  .nav-item {
+    transition: background 0.15s ease,
+                color 0.15s ease,
+                transform 0.12s ease !important;
+  }
+  .nav-item:active {
+    transform: scale(0.97) !important;
+    background: var(--ac-g) !important;
+  }
+
+  /* ── Sidebar inner elements: boosted contrast on dark bg ── */
+
+  /* Brand name + sub */
+  .brand-name  { color: #e8eaf0 !important; }
+  .brand-sub   { color: #6b7585 !important; }
+
+  /* Stats block */
+  .sidebar-stats {
+    background: rgba(255,255,255,.05) !important;
+    border-color: rgba(255,255,255,.08) !important;
+  }
+  .ss-value { color: #e8eaf0 !important; }
+  .ss-label { color: #7a8694 !important; }
+  .ss-divider { background: rgba(255,255,255,.08) !important; }
+
+  /* Nav items */
+  .nav-item       { color: #8b95a3 !important; }
+  .nav-item.active{ color: var(--ac) !important; background: rgba(124,110,247,.12) !important; }
+  .nav-item:hover { color: #c8cdd6 !important; background: rgba(255,255,255,.05) !important; }
+  .nav-icon       { opacity: 0.7; }
+  .nav-item.active .nav-icon,
+  .nav-item:hover .nav-icon { opacity: 1; }
+
+  /* Nav badge */
+  .nav-badge { opacity: 0.9; }
+
+  /* Sidebar footer */
+  .sidebar-footer {
+    border-top-color: rgba(255,255,255,.07) !important;
+  }
+
+  /* User chip */
+  .sidebar-user-chip {
+    background: rgba(255,255,255,.04) !important;
+    border-color: rgba(255,255,255,.07) !important;
+  }
+  .suc-name  { color: #e0e3ec !important; }
+  .suc-email { color: #6b7585 !important; }
+
+  /* Logo mark */
+  .logo-mark {
+    box-shadow: 0 0 20px rgba(124,110,247,.35) !important;
+  }
+
+  /* ── Light theme overrides ── */
+  [data-theme="light"] .brand-name  { color: #0d0f16 !important; }
+  [data-theme="light"] .brand-sub   { color: #6b7280 !important; }
+  [data-theme="light"] .ss-value    { color: #0d0f16 !important; }
+  [data-theme="light"] .ss-label    { color: #6b7280 !important; }
+  [data-theme="light"] .nav-item         { color: #4b5563 !important; }
+  [data-theme="light"] .nav-item.active  { color: var(--ac) !important; background: rgba(124,110,247,.08) !important; }
+  [data-theme="light"] .nav-item:hover   { color: #0d0f16 !important; background: rgba(0,0,0,.04) !important; }
+  [data-theme="light"] .sidebar-stats    { background: rgba(0,0,0,.03) !important; border-color: rgba(0,0,0,.07) !important; }
+  [data-theme="light"] .sidebar-footer   { border-top-color: rgba(0,0,0,.07) !important; }
+  [data-theme="light"] .sidebar-user-chip{ background: rgba(0,0,0,.03) !important; border-color: rgba(0,0,0,.06) !important; }
+  [data-theme="light"] .suc-name  { color: #0d0f16 !important; }
+  [data-theme="light"] .suc-email { color: #6b7280 !important; }
+
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   PART 12 — ULTRA-SMOOTH SIDEBAR + GLOBAL MICRO-INTERACTIONS
+═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+
+  /* ── Sidebar: GPU-accelerated, iOS-style spring curve ── */
+  .sidebar {
+    transform: translateX(-100%) translateZ(0) !important;
+    transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+                box-shadow 0.42s cubic-bezier(0.22, 1, 0.36, 1) !important;
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    perspective: 1000px;
+    -webkit-perspective: 1000px;
+  }
+  .sidebar.open {
+    transform: translateX(0) translateZ(0) !important;
+    box-shadow: 8px 0 48px rgba(0,0,0,.6),
+                2px 0 12px rgba(0,0,0,.3) !important;
+  }
+
+  /* ── Overlay: smooth opacity fade, no layout jump ── */
+  .sidebar-overlay {
+    transition: opacity 0.38s cubic-bezier(0.22, 1, 0.36, 1) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    display: block !important;   /* always in DOM, opacity controls visibility */
+    background: rgba(0,0,0,.4) !important;
+    backdrop-filter: none;       /* remove blur for performance on mobile */
+    -webkit-backdrop-filter: none;
+  }
+  .sidebar-overlay.visible {
+    opacity: 1 !important;
+    pointer-events: all !important;
+  }
+
+  /* ── Nav items: instant response + smooth settle ── */
+  .nav-item {
+    transition: background 0.12s ease,
+                color 0.12s ease,
+                transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .nav-item:active {
+    transform: scale(0.96) translateX(2px) !important;
+  }
+
+  /* ── Icon buttons: bouncy tap ── */
+  .icon-btn, .sidebar-close, .suc-menu-btn {
+    transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
+                background 0.15s ease,
+                color 0.15s ease !important;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .icon-btn:active, .sidebar-close:active {
+    transform: scale(0.88) !important;
+  }
+
+  /* ── Sidebar guest/user chip: smooth hover ── */
+  .sidebar-user-chip, .sidebar-guest-chip {
+    transition: background 0.18s ease,
+                border-color 0.18s ease !important;
+  }
+
+  /* ── Stats items: subtle scale on tap ── */
+  .ss-item {
+    transition: transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .ss-item:active { transform: scale(0.94) !important; }
+
+}
+
+/* ── Global: remove tap flash on all interactive elements ── */
+* { -webkit-tap-highlight-color: transparent; }
+
+/* ── Task items: smooth slide-in on render ── */
+.task-item {
+  transition: background 0.15s ease,
+              border-color 0.15s ease,
+              transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.18s ease !important;
+}
+.task-item:active {
+  transform: scale(0.99) !important;
+}
+
+/* ── Filter buttons: snappy feedback ── */
+.filter-btn {
+  transition: background 0.14s ease,
+              color 0.14s ease,
+              border-color 0.14s ease,
+              transform 0.14s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  -webkit-tap-highlight-color: transparent;
+}
+.filter-btn:active { transform: scale(0.94) !important; }
+
+/* ── Add button: satisfying spring bounce ── */
+.add-btn {
+  transition: background 0.18s ease,
+              transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.2s ease !important;
+}
+.add-btn:active { transform: scale(0.9) !important; }
+
+/* ── Priority chips: quick tap ── */
+.p-chip {
+  transition: background 0.12s ease,
+              color 0.12s ease,
+              border-color 0.12s ease,
+              transform 0.14s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  -webkit-tap-highlight-color: transparent;
+}
+.p-chip:active { transform: scale(0.93) !important; }

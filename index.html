@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta name="theme-color" content="#0a0c10" id="meta-theme"/>
+  <meta name="description" content="NEXA — A modern productivity platform with tasks, streaks, analytics, and Pomodoro timer"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="NEXA"/>
+  <link rel="icon" type="image/png" sizes="16x16" href="icons/icon-16.png"/>
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png"/>
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png"/>
+  <link rel="icon" type="image/x-icon" href="favicon.ico"/>
+  <link rel="manifest" href="manifest.json"/>
+  <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png"/>
+  <link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512.png"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-touch-fullscreen" content="yes"/>
+  <title>NEXA — Productivity Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="sync-styles.css"/>
+  <link rel="stylesheet" href="responsive-fix.css"/>
+  <link rel="stylesheet" href="reminders.css"/>
+  <!-- in <head> after reminders.css -->
+<link rel="stylesheet" href="due-datetime.css"/>
+<link rel="stylesheet" href="feedback.css"/>
+<link rel="stylesheet" href="clickfix.css"/>
+
+  <!--
+  ═══════════════════════════════════════════════════════
+   FIREBASE SDK  (compat v10 — works without a bundler)
+
+   SETUP STEPS — complete BEFORE opening in browser:
+   ───────────────────────────────────────────────────
+   1. Go to https://console.firebase.google.com
+   2. "Add project" → name it (e.g. taskr-prod) → Create
+   3. In the project dashboard click the </> Web icon
+   4. Register app (name: taskr-web) → you'll see a
+      firebaseConfig object — copy ALL values from it
+   5. Open script.js → find the block labelled
+      "PASTE YOUR FIREBASE CONFIG HERE" and replace
+      every placeholder value with your real values
+
+   ENABLE AUTH PROVIDERS (in Firebase Console):
+   ───────────────────────────────────────────────────
+   Build → Authentication → Get started → Sign-in method
+     • Email/Password  → Enable → Save
+     • Google          → Enable → choose support email → Save
+
+   AUTHORISED DOMAINS (for Google popup to work):
+   ───────────────────────────────────────────────────
+   Authentication → Settings → Authorised domains
+     → Add your production domain (localhost is pre-added)
+
+   DEPLOY SECURELY:
+   ───────────────────────────────────────────────────
+   • Use Firebase Hosting:  firebase init hosting → firebase deploy
+   • Or any static host (Vercel, Netlify, GitHub Pages)
+   • The API key in firebaseConfig is safe to expose —
+     it only identifies your project; security is enforced
+     by Firebase Auth rules + Firestore security rules
+  ═══════════════════════════════════════════════════════
+  -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     AUTH LOADER — full-screen spinner shown
+     while Firebase resolves the session state
+══════════════════════════════════════════ -->
+<div id="auth-loader">
+  <div class="auth-loader-inner">
+    <div class="auth-loader-logo"><img src="icons/icon-192.png" alt="NEXA" style="width:48px;height:48px;border-radius:14px;"/></div>
+    <div class="auth-loader-ring"></div>
+    <span class="auth-loader-text" id="auth-loader-text">Loading…</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     AUTH GATE — visible only when signed out
+══════════════════════════════════════════ -->
+<div id="auth-gate" class="auth-gate-hidden">
+
+  <!-- ambient background reuses app orbs -->
+  <div class="bg-grid"></div>
+  <div class="bg-orb orb-1"></div>
+  <div class="bg-orb orb-2"></div>
+
+  <div class="auth-card" id="auth-card">
+    <button class="auth-modal-close" id="auth-modal-close" aria-label="Close" title="Close">✕</button>
+
+    <!-- Brand -->
+    <div class="auth-brand">
+      <div class="auth-logo-mark"><img src="icons/icon-192.png" alt="N" style="width:40px;height:40px;border-radius:12px;object-fit:cover;"/></div>
+      <div class="auth-brand-text">
+        <span class="auth-brand-name">NEXA</span>
+        <span class="auth-brand-sub">productivity platform</span>
+      </div>
+    </div>
+
+    <!-- Tab switcher -->
+    <div class="auth-tabs" role="tablist">
+      <button class="auth-tab active" data-auth-tab="login"  role="tab" aria-selected="true">Sign In</button>
+      <button class="auth-tab"        data-auth-tab="signup" role="tab" aria-selected="false">Create Account</button>
+    </div>
+
+    <!-- LOGIN panel -->
+    <div class="auth-panel active" id="auth-panel-login">
+      <div class="auth-field">
+        <label class="auth-label" for="auth-login-email">Email address</label>
+        <div class="auth-input-wrap">
+          <span class="auth-input-icon">✉</span>
+          <input class="auth-input" type="email" id="auth-login-email" placeholder="you@example.com" autocomplete="email"/>
+        </div>
+      </div>
+      <div class="auth-field">
+        <label class="auth-label" for="auth-login-pass">Password</label>
+        <div class="auth-input-wrap">
+          <span class="auth-input-icon">◉</span>
+          <input class="auth-input" type="password" id="auth-login-pass" placeholder="Enter your password" autocomplete="current-password"/>
+          <button class="auth-pw-eye" data-target="auth-login-pass" aria-label="Toggle password visibility">👁</button>
+        </div>
+        <button class="auth-forgot-link" id="auth-forgot-btn">Forgot password?</button>
+      </div>
+      <button class="auth-submit-btn" id="auth-login-btn">
+        <span class="auth-btn-label">Sign In</span>
+        <span class="auth-btn-spinner"></span>
+      </button>
+      <div class="auth-divider"><span>or continue with</span></div>
+      <button class="auth-google-btn" id="auth-google-login-btn">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" height="18" alt=""/>
+        Continue with Google
+      </button>
+    </div>
+
+    <!-- SIGNUP panel -->
+    <div class="auth-panel" id="auth-panel-signup">
+      <div class="auth-field">
+        <label class="auth-label" for="auth-signup-name">Full name</label>
+        <div class="auth-input-wrap">
+          <span class="auth-input-icon">◈</span>
+          <input class="auth-input" type="text" id="auth-signup-name" placeholder="Jane Doe" autocomplete="name"/>
+        </div>
+      </div>
+      <div class="auth-field">
+        <label class="auth-label" for="auth-signup-email">Email address</label>
+        <div class="auth-input-wrap">
+          <span class="auth-input-icon">✉</span>
+          <input class="auth-input" type="email" id="auth-signup-email" placeholder="you@example.com" autocomplete="email"/>
+        </div>
+      </div>
+      <div class="auth-field">
+        <label class="auth-label" for="auth-signup-pass">
+          Password <span class="auth-label-hint">min. 6 characters</span>
+        </label>
+        <div class="auth-input-wrap">
+          <span class="auth-input-icon">◉</span>
+          <input class="auth-input" type="password" id="auth-signup-pass" placeholder="Choose a strong password" autocomplete="new-password"/>
+          <button class="auth-pw-eye" data-target="auth-signup-pass" aria-label="Toggle password visibility">👁</button>
+        </div>
+      </div>
+      <button class="auth-submit-btn" id="auth-signup-btn">
+        <span class="auth-btn-label">Create Account</span>
+        <span class="auth-btn-spinner"></span>
+      </button>
+      <div class="auth-divider"><span>or continue with</span></div>
+      <button class="auth-google-btn" id="auth-google-signup-btn">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" height="18" alt=""/>
+        Continue with Google
+      </button>
+      <p class="auth-terms">By signing up you agree to our <a href="#">Terms</a> &amp; <a href="#">Privacy Policy</a>.</p>
+    </div>
+
+  </div><!-- /auth-card -->
+</div><!-- /auth-gate -->
+
+
+<!-- ══════════════════════════════════════════
+     APP WRAPPER — hidden until authenticated
+══════════════════════════════════════════ -->
+<div id="app-wrapper">
+
+<!-- Confetti -->
+<canvas id="confetti-canvas"></canvas>
+
+<!-- Background -->
+<div class="bg-grid"></div>
+<div class="bg-orb orb-1"></div>
+<div class="bg-orb orb-2"></div>
+
+<!-- ── TOAST CONTAINER ── -->
+<div class="toast-container" id="toast-container" aria-live="polite" aria-atomic="false"></div>
+
+<!-- ── SYNC STATUS INDICATOR ── -->
+<div class="autosave-indicator sync-indicator" id="autosave-indicator" aria-live="polite" title="Sync status">
+  <span class="autosave-dot sync-dot" id="sync-dot"></span>
+  <span class="autosave-label" id="autosave-label">Synced</span>
+</div>
+
+<!-- ── COMMAND PALETTE ── -->
+<div class="cmd-overlay" id="cmd-overlay" role="dialog" aria-modal="true" aria-label="Command Palette">
+  <div class="cmd-palette">
+    <div class="cmd-header">
+      <span class="cmd-icon">⌘</span>
+      <input type="text" id="cmd-input" class="cmd-input" placeholder="Search commands…" autocomplete="off" spellcheck="false"/>
+      <kbd class="cmd-esc">ESC</kbd>
+    </div>
+    <ul class="cmd-results" id="cmd-results" role="listbox"></ul>
+    <div class="cmd-footer">
+      <span><kbd>↑↓</kbd> Navigate</span>
+      <span><kbd>↵</kbd> Execute</span>
+      <span><kbd>ESC</kbd> Close</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── BULK ACTION BAR ── -->
+<div class="bulk-bar hidden" id="bulk-bar">
+  <span class="bulk-count" id="bulk-count">0 selected</span>
+  <div class="bulk-actions">
+    <button class="bulk-btn bulk-done" id="bulk-complete" title="Mark complete">✔ Complete</button>
+    <button class="bulk-btn bulk-pri" id="bulk-priority-btn" title="Set priority">● Priority</button>
+    <button class="bulk-btn bulk-del" id="bulk-delete" title="Delete selected">✕ Delete</button>
+  </div>
+  <button class="bulk-cancel" id="bulk-cancel">✕</button>
+</div>
+
+<!-- ── UNDO BANNER ── -->
+<div class="undo-banner hidden" id="undo-banner">
+  <span class="undo-msg" id="undo-msg">Task deleted</span>
+  <button class="undo-btn" id="undo-btn">↩ Undo</button>
+  <div class="undo-bar" id="undo-bar"></div>
+</div>
+
+<!-- PWA install banner -->
+<div class="pwa-banner hidden" id="pwa-banner">
+  <div class="pwa-icon">📲</div>
+  <div class="pwa-text">
+    <strong>Install NEXA</strong>
+    <span>Add to your home screen for the best experience</span>
+  </div>
+  <button class="pwa-install-btn" id="pwa-install">Install</button>
+  <button class="pwa-dismiss" id="pwa-dismiss">✕</button>
+</div>
+
+<!-- ── MOBILE OVERLAY ── -->
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<!-- ══════════════════════════════
+     MAIN APP SHELL
+══════════════════════════════ -->
+<div class="app-shell">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
+
+    <!-- Sidebar Header -->
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <div class="logo-mark"><img src="icons/icon-192.png" alt="N" style="width:32px;height:32px;border-radius:8px;object-fit:cover;"/></div>
+        <div class="sidebar-brand">
+          <span class="brand-name">NEXA</span>
+          <span class="brand-sub">productivity platform</span>
+        </div>
+      </div>
+      <button class="sidebar-close" id="sidebar-close" aria-label="Close menu">✕</button>
+    </div>
+
+    <!-- Stats Summary -->
+    <div class="sidebar-stats">
+      <div class="ss-item">
+        <span class="ss-value" id="stat-done">0</span>
+        <span class="ss-label">Done</span>
+      </div>
+      <div class="ss-divider"></div>
+      <div class="ss-item">
+        <span class="ss-value" id="stat-total">0</span>
+        <span class="ss-label">Total</span>
+      </div>
+      <div class="ss-divider"></div>
+      <div class="ss-item">
+        <span class="ss-value streak-mini" id="stat-streak">0🔥</span>
+        <span class="ss-label">Streak</span>
+      </div>
+    </div>
+
+    <!-- Nav Links -->
+    <nav class="sidebar-nav" role="tablist">
+      <button class="nav-item active" data-tab="tasks" role="tab" aria-selected="true">
+        <span class="nav-icon">☰</span>
+        <span class="nav-label">Tasks</span>
+        <span class="nav-badge" id="nav-badge-tasks">0</span>
+      </button>
+      <button class="nav-item" data-tab="analytics" role="tab" aria-selected="false">
+        <span class="nav-icon">◈</span>
+        <span class="nav-label">Analytics</span>
+      </button>
+      <button class="nav-item" data-tab="calendar" role="tab" aria-selected="false">
+        <span class="nav-icon">◫</span>
+        <span class="nav-label">Calendar</span>
+        <span class="nav-badge" id="nav-badge-calendar">0</span>
+      </button>
+      <button class="nav-item" data-tab="focus" role="tab" aria-selected="false">
+        <span class="nav-icon">◉</span>
+        <span class="nav-label">Focus</span>
+      </button>
+      <button class="nav-item" data-tab="settings" role="tab" aria-selected="false">
+        <span class="nav-icon">⚙</span>
+        <span class="nav-label">Settings</span>
+      </button>
+    </nav>
+
+    <!-- ══ GUEST SIGN-IN CHIP (visible only when logged out) ══ -->
+    <div class="sidebar-guest-chip" id="sidebar-guest-chip">
+      <div class="sidebar-guest-icon">🔒</div>
+      <span class="sidebar-guest-text">Sign in to unlock<br>all features</span>
+      <button class="sidebar-guest-btn" id="sidebar-guest-btn">Sign In</button>
+    </div>
+
+    <!-- ══ USER PROFILE CHIP ══ -->
+    <div class="sidebar-user-chip" id="sidebar-user-chip">
+      <div class="suc-avatar" id="suc-avatar">?</div>
+      <div class="suc-info">
+        <span class="suc-name"  id="suc-name">…</span>
+        <span class="suc-email" id="suc-email"></span>
+      </div>
+      <button class="suc-menu-btn" id="suc-menu-btn" aria-label="Account options" title="Account options">⋯</button>
+      <div class="suc-flyout hidden" id="suc-flyout" role="menu">
+        <button class="suc-flyout-item" id="suc-profile-btn" role="menuitem">◉ My Profile</button>
+        <button class="suc-flyout-item suc-danger" id="suc-signout-btn" role="menuitem">⎋ Sign Out</button>
+      </div>
+    </div>
+
+    <!-- Sidebar Footer -->
+    <div class="sidebar-footer">
+      <button class="icon-btn" id="sound-toggle" title="Toggle sound" aria-label="Toggle sound">🔊</button>
+      <button class="icon-btn" id="theme-toggle" title="Toggle theme" aria-label="Toggle theme">◐</button>
+      <button class="icon-btn" id="cmd-trigger" title="Command Palette (Ctrl+K)" aria-label="Open command palette">⌘</button>
+    </div>
+  </aside>
+
+  <!-- ── MAIN CONTENT ── -->
+  <main class="main-content" id="main-content">
+
+    <!-- ── TOPBAR (mobile header) ── -->
+    <header class="topbar">
+      <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="topbar-title" id="topbar-title">Tasks</div>
+      <div class="topbar-actions">
+        <div class="stats-pill">
+          <span id="stat-done-top">0</span><span class="sep">/</span><span id="stat-total-top">0</span>
+          <span class="sl">done</span>
+        </div>
+        <button class="icon-btn sm" id="cmd-trigger-mobile" title="Command Palette" aria-label="Open command palette">⌘</button>
+      </div>
+    </header>
+
+    <!-- ══ TASKS ══ -->
+    <section id="tab-tasks" class="tab-panel active" role="tabpanel" aria-label="Tasks">
+      <div class="search-wrap">
+        <span class="search-icon">⌕</span>
+        <input type="text" id="search-input" class="search-input" placeholder="Search tasks… (press / to focus)" autocomplete="off"/>
+        <button class="search-clear hidden" id="search-clear" aria-label="Clear search">✕</button>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+        <span class="progress-pct" id="progress-pct">0%</span>
+      </div>
+      <div class="filter-bar" id="filter-bar">
+        <button class="filter-btn active" data-filter="all">All <span class="fc" id="fc-all">0</span></button>
+        <button class="filter-btn" data-filter="active">Active <span class="fc" id="fc-act">0</span></button>
+        <button class="filter-btn" data-filter="done">Done <span class="fc" id="fc-don">0</span></button>
+        <button class="filter-btn" data-filter="high">🔥 High <span class="fc" id="fc-hi">0</span></button>
+        <button class="filter-btn" data-filter="today">Today <span class="fc" id="fc-today">0</span></button>
+        <button class="filter-btn" data-filter="overdue">⚠ Overdue <span class="fc" id="fc-overdue">0</span></button>
+      </div>
+      <div class="list-toolbar">
+        <button class="toolbar-btn" id="bulk-toggle-btn" title="Multi-select mode">⊡ Select</button>
+        <div class="toolbar-right">
+          <button class="toolbar-btn" id="export-btn" title="Export data">⬇ Export</button>
+          <button class="toolbar-btn" id="import-btn" title="Import data">⬆ Import</button>
+          <input type="file" id="import-file" accept=".json" style="display:none"/>
+        </div>
+      </div>
+      <div class="skeleton-list hidden" id="skeleton-list">
+        <div class="skeleton-item"><div class="sk-check"></div><div class="sk-body"><div class="sk-line sk-long"></div><div class="sk-line sk-short"></div></div></div>
+        <div class="skeleton-item"><div class="sk-check"></div><div class="sk-body"><div class="sk-line sk-med"></div><div class="sk-line sk-short"></div></div></div>
+        <div class="skeleton-item"><div class="sk-check"></div><div class="sk-body"><div class="sk-line sk-long"></div><div class="sk-line sk-short"></div></div></div>
+      </div>
+      <ul class="task-list" id="task-list" role="list"></ul>
+      <div class="empty-state hidden" id="empty-state">
+        <div class="empty-icon">⬡</div>
+        <h2 class="empty-title">No tasks here</h2>
+        <p class="empty-sub">Add something below and start shipping.</p>
+      </div>
+      <div class="empty-state hidden" id="search-empty-state">
+        <div class="empty-icon">⌕</div>
+        <h2 class="empty-title">No matches found</h2>
+        <p class="empty-sub">Try a different keyword or clear the search.</p>
+      </div>
+    </section>
+
+    <!-- ══ ANALYTICS ══ -->
+    <section id="tab-analytics" class="tab-panel" role="tabpanel" aria-label="Analytics">
+      <div class="page-header">
+        <h2 class="page-title">Analytics</h2>
+        <p class="page-sub">Your productivity at a glance</p>
+      </div>
+      <div class="dash-grid">
+        <div class="dash-card accent-card">
+          <div class="dc-label">Total Completed</div>
+          <div class="dc-value" id="d-total-done">0</div>
+          <div class="dc-sub">all time</div>
+        </div>
+        <div class="dash-card">
+          <div class="dc-label">Current Streak</div>
+          <div class="dc-value streak-val" id="d-streak">0<span class="streak-fire">🔥</span></div>
+          <div class="dc-sub">days in a row</div>
+        </div>
+        <div class="dash-card">
+          <div class="dc-label">Pending Tasks</div>
+          <div class="dc-value" id="d-pending">0</div>
+          <div class="dc-sub">waiting for you</div>
+        </div>
+        <div class="dash-card">
+          <div class="dc-label">Completion Rate</div>
+          <div class="dc-value" id="d-rate">0%</div>
+          <div class="dc-sub">this week</div>
+        </div>
+      </div>
+      <div class="analytics-row">
+        <div class="an-card"><div class="an-label">Efficiency Ratio</div><div class="an-value" id="an-efficiency">—</div><div class="an-sub">done vs created</div></div>
+        <div class="an-card"><div class="an-label">Overdue Rate</div><div class="an-value" id="an-overdue-rate">—</div><div class="an-sub">of active tasks</div></div>
+        <div class="an-card"><div class="an-label">Longest Streak</div><div class="an-value" id="an-best-streak">0🏆</div><div class="an-sub">days record</div></div>
+      </div>
+      <div class="dash-section">
+        <h3 class="dash-section-title">Weekly Activity <span class="dash-week" id="dash-week"></span></h3>
+        <div class="weekly-chart" id="weekly-chart"></div>
+      </div>
+      <div class="dash-section">
+        <h3 class="dash-section-title">12-Week Heatmap</h3>
+        <div class="heatmap-wrap" id="heatmap-wrap">
+          <div class="heatmap-days"><span>M</span><span>W</span><span>F</span></div>
+          <div class="heatmap-grid" id="heatmap-grid"></div>
+        </div>
+        <div class="heatmap-legend">
+          <span class="hm-leg-label">Less</span>
+          <span class="hm-cell hm-0"></span><span class="hm-cell hm-1"></span>
+          <span class="hm-cell hm-2"></span><span class="hm-cell hm-3"></span>
+          <span class="hm-cell hm-4"></span>
+          <span class="hm-leg-label">More</span>
+        </div>
+      </div>
+      <div class="dash-section">
+        <h3 class="dash-section-title">Priority Breakdown</h3>
+        <div class="priority-breakdown" id="priority-breakdown"></div>
+      </div>
+      <div class="dash-section">
+        <h3 class="dash-section-title">Recent Completions</h3>
+        <ul class="recent-list" id="recent-list"></ul>
+        <div class="empty-recent hidden" id="empty-recent">No completions yet. Get to it! 💪</div>
+      </div>
+    </section>
+
+    <!-- ══ CALENDAR ══ -->
+    <section id="tab-calendar" class="tab-panel" role="tabpanel" aria-label="Calendar">
+      <div class="page-header">
+        <h2 class="page-title">Calendar</h2>
+        <p class="page-sub">Due dates and weekly planner</p>
+      </div>
+      <div class="cal-week-nav">
+        <button class="cal-nav-btn" id="cal-prev">‹</button>
+        <span class="cal-week-label" id="cal-week-label"></span>
+        <button class="cal-nav-btn" id="cal-next">›</button>
+        <button class="cal-today-btn" id="cal-today-btn">Today</button>
+      </div>
+      <div class="cal-week-grid-wrap"><div class="cal-week-grid" id="cal-week-grid"></div></div>
+      <div class="cal-panels">
+        <div class="cal-panel">
+          <h3 class="dash-section-title">⚠ Overdue</h3>
+          <ul class="cal-task-list" id="cal-overdue-list"></ul>
+          <div class="cal-empty hidden" id="cal-overdue-empty">No overdue tasks 🎉</div>
+        </div>
+        <div class="cal-panel">
+          <h3 class="dash-section-title">📅 Upcoming (7 days)</h3>
+          <ul class="cal-task-list" id="cal-upcoming-list"></ul>
+          <div class="cal-empty hidden" id="cal-upcoming-empty">Nothing due soon</div>
+        </div>
+        <div class="cal-panel">
+          <h3 class="dash-section-title">↻ Recurring Tasks</h3>
+          <ul class="cal-task-list" id="cal-recur-list"></ul>
+          <div class="cal-empty hidden" id="cal-recur-empty">No recurring tasks</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ FOCUS ══ -->
+    <section id="tab-focus" class="tab-panel" role="tabpanel" aria-label="Focus">
+      <div class="page-header">
+        <h2 class="page-title">Focus</h2>
+        <p class="page-sub">Pomodoro timer &amp; deep work mode</p>
+      </div>
+      <div class="focus-layout">
+        <div class="pomodoro-card">
+          <div class="pomo-mode-bar">
+            <button class="pomo-mode-btn active" data-mode="work">Focus</button>
+            <button class="pomo-mode-btn" data-mode="short">Short Break</button>
+            <button class="pomo-mode-btn" data-mode="long">Long Break</button>
+          </div>
+          <div class="pomo-ring-wrap">
+            <svg class="pomo-ring" viewBox="0 0 220 220" aria-hidden="true">
+              <circle class="ring-bg" cx="110" cy="110" r="96"/>
+              <circle class="ring-fill" id="ring-fill" cx="110" cy="110" r="96" stroke-dasharray="603" stroke-dashoffset="0"/>
+            </svg>
+            <div class="pomo-time-display">
+              <span class="pomo-time" id="pomo-time">25:00</span>
+              <span class="pomo-label" id="pomo-label">Focus Time</span>
+            </div>
+          </div>
+          <div class="pomo-controls">
+            <button class="pomo-btn secondary" id="pomo-reset" title="Reset">↺</button>
+            <button class="pomo-btn primary" id="pomo-start">▶ Start</button>
+            <button class="pomo-btn secondary" id="pomo-skip" title="Skip">⏭</button>
+          </div>
+          <div class="pomo-sessions">
+            <span class="pomo-session-label">Session</span>
+            <div class="pomo-dots" id="pomo-dots"></div>
+            <span class="pomo-session-count" id="pomo-count">0 / 4</span>
+          </div>
+          <div class="pomo-task-bind">
+            <div class="ptb-label">Working on</div>
+            <select class="ptb-select" id="pomo-task-select"><option value="">— Choose a task —</option></select>
+          </div>
+          <button class="fullscreen-btn" id="fullscreen-btn">⤢ Enter Fullscreen Focus</button>
+        </div>
+        <div class="focus-settings-panel">
+          <h3 class="focus-settings-title">Timer Settings</h3>
+          <div class="pomo-settings">
+            <div class="pomo-set-row"><label>Focus <span class="set-unit">min</span></label><input type="number" class="set-input" id="set-work" value="25" min="1" max="60"/></div>
+            <div class="pomo-set-row"><label>Short Break <span class="set-unit">min</span></label><input type="number" class="set-input" id="set-short" value="5" min="1" max="30"/></div>
+            <div class="pomo-set-row"><label>Long Break <span class="set-unit">min</span></label><input type="number" class="set-input" id="set-long" value="15" min="1" max="60"/></div>
+          </div>
+          <div class="focus-tips">
+            <div class="tip-item"><span class="tip-icon">💡</span><span>Work in 25-min sprints with short breaks to sustain deep focus.</span></div>
+            <div class="tip-item"><span class="tip-icon">🎯</span><span>Assign a task before starting to track what you're working on.</span></div>
+            <div class="tip-item"><span class="tip-icon">🔕</span><span>Enable notifications so NEXA alerts you when sessions end.</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="focus-fullscreen hidden" id="focus-fullscreen">
+        <div class="fs-ambient"></div>
+        <div class="fs-content">
+          <div class="fs-mode-bar">
+            <button class="pomo-mode-btn active" data-mode="work" data-fs="true">Focus</button>
+            <button class="pomo-mode-btn" data-mode="short" data-fs="true">Short Break</button>
+            <button class="pomo-mode-btn" data-mode="long" data-fs="true">Long Break</button>
+          </div>
+          <div class="fs-time" id="fs-time">25:00</div>
+          <div class="fs-label" id="fs-label">Focus Time</div>
+          <div class="fs-task" id="fs-task"></div>
+          <div class="pomo-controls">
+            <button class="pomo-btn secondary" id="fs-reset">↺</button>
+            <button class="pomo-btn primary" id="fs-start">▶ Start</button>
+            <button class="pomo-btn secondary" id="fs-skip">⏭</button>
+          </div>
+          <div class="pomo-sessions" style="justify-content:center">
+            <div class="pomo-dots" id="fs-dots"></div>
+            <span class="pomo-session-count" id="fs-count">0 / 4</span>
+          </div>
+        </div>
+        <button class="fs-exit" id="fs-exit">✕ Exit Focus Mode</button>
+      </div>
+    </section>
+
+    <!-- ══ SETTINGS ══ -->
+    <section id="tab-settings" class="tab-panel" role="tabpanel" aria-label="Settings">
+      <div class="page-header">
+        <h2 class="page-title">Settings</h2>
+        <p class="page-sub">Customize your experience</p>
+      </div>
+      <div class="settings-grid">
+
+        <div class="settings-card">
+          <div class="sc-header"><span class="sc-icon">◐</span><h3 class="sc-title">Appearance</h3></div>
+          <div class="sc-body">
+            <div class="setting-row">
+              <div class="sr-info"><span class="sr-label">Dark Mode</span><span class="sr-sub">Switch between dark and light themes</span></div>
+              <button class="toggle-btn" id="settings-theme-toggle" aria-label="Toggle theme"><span class="toggle-knob"></span></button>
+            </div>
+            <div class="setting-row">
+              <div class="sr-info"><span class="sr-label">Reduce Animations</span><span class="sr-sub">Limit motion for accessibility</span></div>
+              <button class="toggle-btn" id="settings-anim-toggle" aria-label="Toggle animations"><span class="toggle-knob"></span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-card">
+          <div class="sc-header"><span class="sc-icon">🔊</span><h3 class="sc-title">Sound</h3></div>
+          <div class="sc-body">
+            <div class="setting-row">
+              <div class="sr-info"><span class="sr-label">Sound Effects</span><span class="sr-sub">Clicks and completion sounds</span></div>
+              <button class="toggle-btn" id="settings-sound-toggle" aria-label="Toggle sound"><span class="toggle-knob"></span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-card">
+          <div class="sc-header"><span class="sc-icon">⬇</span><h3 class="sc-title">Data</h3></div>
+          <div class="sc-body">
+            <div class="settings-actions">
+              <button class="settings-action-btn" id="settings-export"><span>⬇</span> Export Tasks<span class="sab-sub">Download JSON backup</span></button>
+              <button class="settings-action-btn" id="settings-import"><span>⬆</span> Import Tasks<span class="sab-sub">Restore from backup</span></button>
+              <button class="settings-action-btn danger" id="settings-clear"><span>✕</span> Clear All Data<span class="sab-sub">Delete all tasks permanently</span></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ ACCOUNT CARD (new) ══ -->
+        <div class="settings-card">
+          <div class="sc-header"><span class="sc-icon">◉</span><h3 class="sc-title">Account</h3></div>
+          <div class="sc-body">
+            <div class="profile-avatar-row">
+              <div class="profile-avatar-lg" id="settings-avatar">?</div>
+              <div class="profile-meta-col">
+                <span class="profile-display-name" id="settings-display-name">—</span>
+                <span class="profile-email-text"   id="settings-email">—</span>
+                <span class="profile-provider-tag" id="settings-provider-tag">—</span>
+              </div>
+            </div>
+            <div class="profile-detail-grid">
+              <div class="pdi-row"><span class="pdi-label">User ID</span><span class="pdi-val mono" id="settings-uid">—</span></div>
+              <div class="pdi-row"><span class="pdi-label">Email verified</span><span class="pdi-val" id="settings-verified">—</span></div>
+              <div class="pdi-row"><span class="pdi-label">Member since</span><span class="pdi-val" id="settings-created">—</span></div>
+              <div class="pdi-row"><span class="pdi-label">Last sign-in</span><span class="pdi-val" id="settings-lastlogin">—</span></div>
+            </div>
+            <div class="settings-actions" style="margin-top:14px">
+              <button class="settings-action-btn danger" id="settings-signout-btn">
+                <span>⎋</span> Sign Out<span class="sab-sub">End your current session</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ ABOUT CARD — enhanced ══ -->
+        <div class="settings-card">
+          <div class="sc-header"><span class="sc-icon">✦</span><h3 class="sc-title">About NEXA</h3></div>
+          <div class="sc-body">
+            <div class="about-info">
+              <div class="about-logo"><img src="icons/icon-192.png" alt="NEXA" style="width:44px;height:44px;border-radius:12px;object-fit:cover;"/></div>
+              <div>
+                <div class="about-name">NEXA</div>
+                <div class="about-ver">Smart Productivity Suite · v1.0</div>
+                <div class="about-desc">A modern productivity platform with smart tasks, reminders, focus tools, analytics, streak tracking, and real-time cloud sync.</div>
+              </div>
+            </div>
+            <div class="about-stat-row">
+              <div class="about-stat">
+                <span class="about-stat-val">PWA</span>
+                <span class="about-stat-label">Installable</span>
+              </div>
+              <div class="about-stat">
+                <span class="about-stat-val">Offline</span>
+                <span class="about-stat-label">IndexedDB</span>
+              </div>
+              <div class="about-stat">
+                <span class="about-stat-val">Sync</span>
+                <span class="about-stat-label">Firestore</span>
+              </div>
+              <div class="about-stat">
+                <span class="about-stat-val">🔔</span>
+                <span class="about-stat-label">Reminders</span>
+              </div>
+            </div>
+            <div class="about-badges">
+              <span class="about-badge">⚡ v3.1.0</span>
+              <span class="about-badge ab-green">✓ Offline Sync</span>
+              <span class="about-badge ab-green">✓ PWA Ready</span>
+              <span class="about-badge ab-orange">🔔 Reminders</span>
+            </div>
+            <div class="about-heart">Built with ❤️ for productivity</div>
+          </div>
+        </div>
+
+        <!-- ══ FEEDBACK CARD ══ -->
+        <div class="settings-card" id="fb-main-card">
+          <div class="sc-header"><span class="sc-icon">💬</span><h3 class="sc-title">Feedback</h3></div>
+          <div class="sc-body">
+
+            <!-- Mood row -->
+            <div>
+              <div class="fb-section-label">How satisfied are you with NEXA today?</div>
+              <div class="fb-mood-row">
+                <button class="fb-mood-btn" data-mood="terrible"   aria-label="Terrible"   title="Terrible">😡</button>
+                <button class="fb-mood-btn" data-mood="unhappy"    aria-label="Unhappy"    title="Unhappy">😕</button>
+                <button class="fb-mood-btn" data-mood="neutral"    aria-label="Neutral"    title="Neutral">😐</button>
+                <button class="fb-mood-btn" data-mood="happy"      aria-label="Happy"      title="Happy">🙂</button>
+                <button class="fb-mood-btn" data-mood="love"       aria-label="Love it!"   title="Love it!">😍</button>
+              </div>
+            </div>
+
+            <hr class="fb-divider"/>
+
+            <!-- Star rating -->
+            <div>
+              <div class="fb-section-label">Rate NEXA</div>
+              <div id="fb-stars-row" role="group" aria-label="Star rating">
+                <button class="fb-star" data-val="1" aria-label="1 star"  tabindex="0">⭐</button>
+                <button class="fb-star" data-val="2" aria-label="2 stars" tabindex="0">⭐</button>
+                <button class="fb-star" data-val="3" aria-label="3 stars" tabindex="0">⭐</button>
+                <button class="fb-star" data-val="4" aria-label="4 stars" tabindex="0">⭐</button>
+                <button class="fb-star" data-val="5" aria-label="5 stars" tabindex="0">⭐</button>
+                <span id="fb-star-label" class="fb-star-label" aria-live="polite"></span>
+              </div>
+            </div>
+
+            <hr class="fb-divider"/>
+
+            <!-- Textarea -->
+            <div>
+              <div class="fb-section-label">Send Feedback</div>
+              <div class="fb-textarea-wrap">
+                <textarea
+                  id="fb-message"
+                  class="fb-textarea"
+                  placeholder="Tell us what you love, what's broken, or what you'd like to see next…"
+                  maxlength="500"
+                  aria-label="Feedback message"
+                ></textarea>
+                <span id="fb-char-count" class="fb-char-counter" aria-live="polite">0 / 500</span>
+              </div>
+            </div>
+
+            <!-- Success banner -->
+            <div id="fb-success-banner" class="fb-success-banner" aria-live="polite" role="status">
+              <span>✓</span> <span>Thank you! Your feedback was received.</span>
+            </div>
+
+            <!-- Submit -->
+            <button id="fb-submit-btn" class="fb-submit-btn" disabled aria-label="Submit feedback">
+              <span>Send Feedback</span>
+            </button>
+
+          </div>
+        </div>
+
+        <!-- ══ SUPPORT CARD ══ -->
+        <div class="settings-card">
+          <div class="sc-header"><span class="sc-icon">🛟</span><h3 class="sc-title">Contact &amp; Support</h3></div>
+          <div class="sc-body">
+
+            <!-- Quick action buttons -->
+            <div>
+              <div class="fb-section-label">Quick Actions</div>
+              <div class="fb-quick-row">
+                <button id="fb-bug-btn"     class="fb-quick-btn bug"  aria-label="Report a bug">🐛 Report a Bug</button>
+                <button id="fb-feature-btn" class="fb-quick-btn feat" aria-label="Request a feature">✨ Request a Feature</button>
+              </div>
+            </div>
+
+            <hr class="fb-divider"/>
+
+            <!-- Support links -->
+            <div>
+              <div class="fb-section-label">Get in Touch</div>
+              <div class="fb-support-grid">
+
+                <a
+                  href="mailto:divya05092007kumari@gmail.com"
+                  class="fb-support-link email-link"
+                  aria-label="Send support email"
+                >
+                  <span class="fb-link-icon">✉</span>
+                  <span class="fb-link-text">
+                    <span class="fb-link-name">Email Support</span>
+                    <span class="fb-link-sub">divya05092007kumari@gmail.com</span>
+                  </span>
+                </a>
+
+                <a
+                  href="https://github.com/Divya2007-hub/NEXA.git"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="fb-support-link"
+                  aria-label="GitHub"
+                >
+                  <span class="fb-link-icon">⌥</span>
+                  <span class="fb-link-text">
+                    <span class="fb-link-name">GitHub</span>
+                    <span class="fb-link-sub">github.com/Divya2007-hub/NEXA</span>
+                  </span>
+                </a>
+
+                <a
+                  href="https://www.instagram.com/nexa.by.divya?igsh=MWx0enNudzdoazdoZA=="
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="fb-support-link"
+                  aria-label="Instagram"
+                >
+                  <span class="fb-link-icon">◈</span>
+                  <span class="fb-link-text">
+                    <span class="fb-link-name">Instagram</span>
+                    <span class="fb-link-sub">@nexa.by.divya</span>
+                  </span>
+                </a>
+
+                <a
+                  href="https://www.linkedin.com/in/divya-kumari5xxx2t95/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="fb-support-link"
+                  aria-label="LinkedIn"
+                >
+                  <span class="fb-link-icon">in</span>
+                  <span class="fb-link-text">
+                    <span class="fb-link-name">LinkedIn</span>
+                    <span class="fb-link-sub">linkedin.com/in/divya-kumari5xxx2t95</span>
+                  </span>
+                </a>
+
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+</div><!-- /.app-shell -->
+
+<!-- ── INPUT BAR ── -->
+<div class="input-bar" id="input-bar">
+  <div class="input-row">
+    <input type="text" id="task-input" class="task-input" placeholder="What needs to be done?" maxlength="200" autocomplete="off"/>
+    <button class="add-btn" id="add-btn" aria-label="Add task">+</button>
+  </div>
+  <div class="input-meta">
+    <div class="priority-chips">
+      <button class="p-chip chip-low active" data-p="low">● Low</button>
+      <button class="p-chip chip-med" data-p="medium">● Med</button>
+      <button class="p-chip chip-high" data-p="high">● High</button>
+      <button class="p-chip chip-urgent" data-p="urgent">⚡ Urgent</button>
+    </div>
+    <div class="input-meta-right">
+      <div class="recur-wrap">
+        <label for="recur-select" class="date-label">Repeat</label>
+        <select id="recur-select" class="recur-select">
+          <option value="">None</option>
+          <option value="daily">Daily</option>
+          <option value="weekly">Weekly</option>
+          <option value="monthly">Monthly</option>
+        </select>
+      </div>
+      <div class="date-wrap">
+        <label for="due-date" class="date-label">Due</label>
+        <input type="date" id="due-date" class="date-input"/>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Task item template -->
+<template id="task-tpl">
+  <li class="task-item" draggable="true">
+    <div class="bulk-checkbox-wrap">
+      <input type="checkbox" class="bulk-checkbox" aria-label="Select task"/>
+    </div>
+    <div class="drag-handle" title="Drag to reorder">⠿</div>
+    <button class="task-check" aria-label="Toggle complete"></button>
+    <div class="task-body">
+      <span class="task-text"></span>
+      <div class="task-notes-wrap"><div class="task-notes-content"></div></div>
+      <div class="task-meta">
+        <span class="priority-badge"></span>
+        <span class="recur-badge"></span>
+        <span class="due-badge"></span>
+        <span class="created-badge"></span>
+      </div>
+    </div>
+    <div class="task-actions">
+      <button class="notes-btn" title="Notes">≡</button>
+      <button class="reminder-btn" type="button" title="Set reminder" aria-label="Set reminder"><span class="bell-icon" aria-hidden="true">🔔</span></button>
+      <button class="edit-btn" title="Edit">✎</button>
+      <button class="delete-btn" title="Delete">✕</button>
+    </div>
+  </li>
+</template>
+
+<!-- ── GUEST SIGN-IN BANNER ── -->
+<div class="guest-banner" id="guest-banner">
+  <span class="guest-banner-icon">✨</span>
+  <span class="guest-banner-text"><strong>Preview Mode</strong> — Sign in to unlock all features</span>
+  <button class="guest-banner-btn" id="guest-banner-btn">Sign In Free</button>
+</div>
+
+</div><!-- /#app-wrapper -->
+
+<script src="script.js" defer></script>
+<script src="sync.js" defer></script>
+<script src="reminders.js" defer></script>
+<script src="due-datetime-patch.js" defer></script>
+<script src="responsive-patch.js" defer></script>
+<script src="sync-patch.js" defer></script>
+<script src="feedback.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" defer></script>
+<script src="clickfix.js" defer></script>
+</body>
+</html>

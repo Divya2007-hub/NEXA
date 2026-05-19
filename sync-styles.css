@@ -1,0 +1,312 @@
+/* ══════════════════════════════════════════════════════════════
+   NEXA — Offline Sync Styles
+   Adds sync-state classes on top of the existing autosave-indicator.
+   Import this AFTER style.css.
+══════════════════════════════════════════════════════════════ */
+
+/* ── Base override: make indicator slightly wider for longer labels ── */
+.autosave-indicator.sync-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease,
+              transform 0.2s ease, opacity 0.3s ease;
+  cursor: default;
+  user-select: none;
+  min-width: 110px;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+/* ── Dot base ── */
+.sync-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* ══ STATE: SYNCED  🟢 ══ */
+.sync-indicator.sync-synced {
+  background: rgba(34, 197, 94, 0.10);
+  border: 1px solid rgba(34, 197, 94, 0.28);
+  color: #4ade80;
+}
+.sync-dot.sync-synced {
+  background: #22c55e;
+  box-shadow: 0 0 6px rgba(34, 197, 94, 0.6);
+}
+
+/* ══ STATE: SYNCING 🟡 ══ */
+.sync-indicator.sync-syncing {
+  background: rgba(234, 179, 8, 0.10);
+  border: 1px solid rgba(234, 179, 8, 0.28);
+  color: #fbbf24;
+}
+.sync-dot.sync-syncing {
+  background: #eab308;
+  box-shadow: 0 0 6px rgba(234, 179, 8, 0.6);
+  animation: sync-pulse 1.1s ease-in-out infinite;
+}
+
+/* ══ STATE: OFFLINE 🔴 ══ */
+.sync-indicator.sync-offline {
+  background: rgba(239, 68, 68, 0.10);
+  border: 1px solid rgba(239, 68, 68, 0.28);
+  color: #f87171;
+}
+.sync-dot.sync-offline {
+  background: #ef4444;
+  box-shadow: 0 0 6px rgba(239, 68, 68, 0.6);
+}
+
+/* ── Pulse animation for syncing state ── */
+@keyframes sync-pulse {
+  0%, 100% { opacity: 1;   transform: scale(1);    }
+  50%       { opacity: 0.4; transform: scale(0.75); }
+}
+
+/* ── Appear/hide transition when indicator first shows ── */
+.autosave-indicator {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   RESPONSIVE OVERRIDES
+   Ensures no overflow or broken layout on any viewport.
+══════════════════════════════════════════════════════════════ */
+
+/* ── Mobile (320px – 767px) ── */
+@media (max-width: 767px) {
+  /* Sync indicator: compact on small screens */
+  .autosave-indicator.sync-indicator {
+    font-size: 11px;
+    padding: 4px 8px;
+    min-width: 90px;
+  }
+
+  /* Prevent topbar overflow */
+  .topbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+    overflow: hidden;
+  }
+  .topbar-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+    min-width: 0;
+  }
+  .topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  /* Task input bar: no horizontal overflow */
+  .input-bar {
+    box-sizing: border-box;
+    width: 100%;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  .input-meta {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .priority-chips {
+    flex-wrap: wrap;
+  }
+  .input-meta-right {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  /* Sidebar: full-width overlay on mobile */
+  .sidebar {
+    width: min(280px, 88vw);
+  }
+
+  /* Filter bar: horizontal scroll, no text wrapping */
+  .filter-bar {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex-wrap: nowrap;
+    gap: 6px;
+    padding-bottom: 4px;
+  }
+  .filter-bar::-webkit-scrollbar { display: none; }
+  .filter-btn {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  /* Task list items: prevent text overflow */
+  .task-item {
+    min-width: 0;
+    overflow: hidden;
+  }
+  .task-text {
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+
+  /* Bulk bar: compact */
+  .bulk-bar {
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 10px 12px;
+  }
+  .bulk-actions {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  /* Dashboard cards: single column */
+  .dash-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  /* Analytics row */
+  .analytics-row {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .an-card {
+    flex: 1 1 calc(50% - 5px);
+    min-width: 120px;
+  }
+
+  /* Pomodoro: ensure ring doesn't overflow */
+  .pomo-ring-wrap {
+    max-width: 200px;
+    margin: 0 auto;
+  }
+  .focus-layout {
+    flex-direction: column;
+  }
+
+  /* Settings grid: single column */
+  .settings-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Calendar panels: stack */
+  .cal-panels {
+    flex-direction: column;
+  }
+
+  /* Weekly chart: scrollable on tiny screens */
+  .weekly-chart {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Heatmap: scrollable */
+  .heatmap-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Undo banner */
+  .undo-banner {
+    bottom: 80px;
+    left: 12px;
+    right: 12px;
+    max-width: 100%;
+  }
+}
+
+/* ── Tablet (768px – 1023px) ── */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .autosave-indicator.sync-indicator {
+    font-size: 12px;
+    min-width: 100px;
+  }
+
+  /* Sidebar: narrower on tablet */
+  .sidebar {
+    width: 220px;
+  }
+
+  .settings-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .cal-panels {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .cal-panel {
+    flex: 1 1 calc(50% - 6px);
+    min-width: 220px;
+  }
+
+  .analytics-row {
+    flex-wrap: wrap;
+  }
+  .an-card {
+    flex: 1 1 calc(33% - 8px);
+    min-width: 140px;
+  }
+
+  .focus-layout {
+    flex-direction: column;
+  }
+}
+
+/* ── Laptop / Desktop (1024px+) ── */
+@media (min-width: 1024px) {
+  .autosave-indicator.sync-indicator {
+    font-size: 12px;
+  }
+
+  .focus-layout {
+    display: flex;
+    flex-direction: row;
+    gap: 24px;
+    align-items: flex-start;
+  }
+  .pomodoro-card {
+    flex: 0 0 360px;
+  }
+  .focus-settings-panel {
+    flex: 1;
+  }
+}
+
+/* ── Large screens (1440px+) ── */
+@media (min-width: 1440px) {
+  .main-content {
+    max-width: 960px;
+  }
+  .settings-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ── Prevent global horizontal overflow ── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+html, body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+.app-shell, .main-content, .app-wrapper {
+  min-width: 0;
+  overflow-x: hidden;
+}
