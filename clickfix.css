@@ -1,29 +1,23 @@
 /* ══════════════════════════════════════════════════════════════
-   NEXA — Clickability Fix  |  clickfix.css
-   Load LAST, after all other stylesheets.
-   Fixes: Feedback form + Quick Action buttons not clickable.
+   NEXA — Clickability Fix  |  clickfix.css  v4.0
 ══════════════════════════════════════════════════════════════ */
 
-/* ── 1. Remove overflow:hidden from ALL settings cards ── */
+/* 1. Remove overflow clipping from all settings containers */
 .settings-card,
-.settings-card *,
+.sc-body,
 #fb-main-card,
-.sc-body {
+.settings-grid,
+#tab-settings {
   overflow: visible !important;
 }
 
-/* ── 2. Ensure cards are positioned so z-index works ── */
-.settings-card {
-  position: relative !important;
-}
-
-/* ── 3. Remove any pseudo-element overlays that block clicks ── */
+/* 2. Remove the pseudo-element overlay that blocked clicks */
 .settings-card::before {
   display: none !important;
   pointer-events: none !important;
 }
 
-/* ── 4. Force all interactive elements inside settings to be clickable ── */
+/* 3. All interactive elements inside settings — fully clickable */
 .settings-card button,
 .settings-card input,
 .settings-card textarea,
@@ -41,72 +35,57 @@
 #fb-feature-btn,
 #fb-stars-row button {
   pointer-events: all !important;
-  cursor: pointer !important;
   position: relative !important;
-  z-index: 10 !important;
+  /* NO z-index here — let natural stacking order apply */
 }
 
-/* ── 5. textarea should use text cursor ── */
+/* 4. Correct cursors */
+.settings-card button,
+.fb-star,
+.fb-mood-btn,
+.fb-quick-btn,
+#fb-bug-btn,
+#fb-feature-btn {
+  cursor: pointer !important;
+}
+
 .fb-textarea,
 #fb-message {
   cursor: text !important;
 }
 
-/* ── 6. Disabled submit button keeps not-allowed ── */
 #fb-submit-btn:disabled,
 .fb-submit-btn:not(.ready) {
   cursor: not-allowed !important;
 }
 
-/* ── 7. Ensure the settings grid itself doesn't clip ── */
-.settings-grid {
-  overflow: visible !important;
-}
-
-/* ── 8. Tab panel overflow must not clip ── */
+/* 5. Ensure settings grid doesn't clip */
+.settings-grid,
 #tab-settings {
   overflow: visible !important;
 }
-
-/* ── 9. Quick action buttons specific fix ── */
-#fb-bug-btn,
-#fb-feature-btn {
-  pointer-events: all !important;
-  cursor: pointer !important;
-  z-index: 20 !important;
+/* ── Toggle button fix: knob must always render correctly ── */
+.toggle-btn {
   position: relative !important;
+  overflow: visible !important;
 }
 
-/* ── 10. Support links ── */
-.fb-support-link {
-  pointer-events: all !important;
-  cursor: pointer !important;
-  z-index: 20 !important;
-  position: relative !important;
+.toggle-knob {
+  position: absolute !important;
+  top: 2px !important;
+  left: 2px !important;
+  width: 16px !important;
+  height: 16px !important;
+  border-radius: 50% !important;
+  background: var(--tx2) !important;
+  pointer-events: none !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  transition: transform 0.38s cubic-bezier(0.34,1.56,0.64,1), background 0.18s ease !important;
 }
 
-/* ── 11. Star rating row ── */
-#fb-stars-row {
-  position: relative !important;
-  z-index: 10 !important;
-}
-
-.fb-star {
-  pointer-events: all !important;
-  cursor: pointer !important;
-  position: relative !important;
-  z-index: 15 !important;
-}
-
-/* ── 12. Mood buttons ── */
-.fb-mood-row {
-  position: relative !important;
-  z-index: 10 !important;
-}
-
-.fb-mood-btn {
-  pointer-events: all !important;
-  cursor: pointer !important;
-  position: relative !important;
-  z-index: 15 !important;
+.toggle-btn.on .toggle-knob {
+  transform: translateX(16px) !important;
+  background: #fff !important;
 }

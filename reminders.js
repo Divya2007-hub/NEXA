@@ -14,8 +14,6 @@
  *   ✅ Firebase Firestore sync (reminderEnabled, reminderTime, notified)
  *   ✅ LocalStorage offline queue + sync when online returns
  *   ✅ Auto-reschedule on every page load
- *   ✅ Notification sound toggle (Settings)
- *   ✅ Test notification button (Settings)
  *   ✅ Default reminder timing picker (Settings)
  *   ✅ Snooze duration setting (Settings)
  *   ✅ SW action handler: complete / snooze / open
@@ -927,17 +925,6 @@
           <button class="rs-action-btn" id="rs-request-btn">Request permission</button>
         </div>
 
-        <!-- Sound toggle -->
-        <div class="reminder-settings-row">
-          <div>
-            <div class="rs-label">Notification sound</div>
-            <div class="rs-sub">Play a tone when a reminder fires</div>
-          </div>
-          <button class="toggle-btn ${settings.soundEnabled ? 'on' : ''}" id="rs-sound-toggle" aria-label="Toggle notification sound" style="pointer-events:auto">
-            <span class="toggle-knob" style="pointer-events:none"></span>
-          </button>
-        </div>
-
         <!-- Default offset -->
         <div class="reminder-settings-row">
           <div>
@@ -969,15 +956,6 @@
             <div class="rs-sub">Tasks currently scheduled for notification</div>
           </div>
           <span class="rs-perm-status default" id="rs-active-count">0</span>
-        </div>
-
-        <!-- Test notification (dev only) -->
-        <div class="reminder-settings-row" id="rs-test-row" style="display:none">
-          <div>
-            <div class="rs-label">Test notification</div>
-            <div class="rs-sub">Fire a sample reminder right now</div>
-          </div>
-          <button class="rs-action-btn" id="rs-test-btn">Send test</button>
         </div>
 
         <!-- Clear all -->
@@ -1012,15 +990,6 @@
       }
     });
 
-    /* Sound toggle — scoped to this card, no duplicate listeners */
-    card.querySelector('#rs-sound-toggle')?.addEventListener('click', function () {
-      const settings = _loadSettings();
-      settings.soundEnabled = !settings.soundEnabled;
-      _saveSettings(settings);
-      this.classList.toggle('on', settings.soundEnabled);
-      _showToast(settings.soundEnabled ? '🔊 Notification sound on' : '🔇 Notification sound off');
-    });
-
     /* Default offset */
     card.querySelector('#rs-default-offset')?.addEventListener('change', (e) => {
       const settings = _loadSettings();
@@ -1036,41 +1005,6 @@
       e.target.value = settings.snoozeDuration;
     });
 
-    /* Test notification */
-    card.querySelector('#rs-test-btn')?.addEventListener('click', async () => {
-      if (_perm.status !== 'granted') {
-        _showToast('Enable notifications first to test them', 3000);
-        return;
-      }
-      _playReminderSound();
-      const testTag  = 'nexa-test-' + Date.now();
-      const testData = {
-        type:  SW_MSG_SCHEDULE,
-        title: 'NEXA Test Reminder',
-        body:  'This is a test — reminders are working! 🎉',
-        tag:   testTag,
-        taskId: null,
-        icon:  '/icons/icon-192.png',
-        badge: '/icons/icon-192.png',
-      };
-      try {
-        const controller = await _ensureSwController();
-        if (controller) {
-          controller.postMessage(testData);
-        } else {
-          new Notification(testData.title, {
-            body:  testData.body,
-            icon:  testData.icon,
-            badge: testData.badge,
-            tag:   testTag,
-          });
-        }
-        _showToast('🔔 Test notification sent!');
-      } catch (e) {
-        _showToast('Failed to send test notification: ' + e.message, 4000);
-      }
-    });
-
     /* Clear all */
     card.querySelector('#rs-clear-btn')?.addEventListener('click', () => {
       const data = _loadReminders();
@@ -1084,7 +1018,6 @@
   function _refreshSettingsPermStatus() {
     const statusEl  = document.getElementById('rs-perm-status');
     const reqRow    = document.getElementById('rs-request-row');
-    const testRow   = document.getElementById('rs-test-row');
     const countEl   = document.getElementById('rs-active-count');
     const requestBtn = document.getElementById('rs-request-btn');
 
@@ -1111,15 +1044,6 @@
         requestBtn.textContent = 'Request permission';
         requestBtn.disabled = false;
       }
-    }
-
-    /* Show test row only in dev mode and when permission is granted */
-    const _isDev = ['localhost', '127.0.0.1'].includes(location.hostname) ||
-                   location.port !== '' ||
-                   location.protocol === 'file:';
-
-    if (testRow) {
-      testRow.style.display = (p === 'granted' && _isDev) ? '' : 'none';
     }
 
     if (countEl) {
