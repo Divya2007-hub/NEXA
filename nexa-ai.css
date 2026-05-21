@@ -1,0 +1,338 @@
+/* NEXA — AI Assistant  |  nexa-ai.css  v2.0 */
+
+/* ── FAB Button ── */
+#nexa-ai-btn {
+  position: fixed;
+  bottom: 110px;
+  right: 20px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--ac);
+  border: none;
+  cursor: pointer;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(124,110,247,.5), 0 2px 8px rgba(0,0,0,.3);
+  transition: transform var(--tr-spring), background var(--tr), box-shadow var(--tr);
+  color: #fff;
+  font-size: 1.2rem;
+}
+#nexa-ai-btn:hover {
+  background: var(--ac2);
+  transform: scale(1.08);
+  box-shadow: 0 6px 28px rgba(124,110,247,.6), 0 2px 10px rgba(0,0,0,.35);
+}
+#nexa-ai-btn:active { transform: scale(.93); }
+#nexa-ai-btn .ai-badge {
+  position: absolute;
+  top: -3px; right: -3px;
+  width: 13px; height: 13px;
+  border-radius: 50%;
+  background: #22c55e;
+  border: 2px solid var(--bg);
+  animation: ai-badge-pulse 3s ease-in-out infinite;
+}
+@keyframes ai-badge-pulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
+  50%      { box-shadow: 0 0 0 4px rgba(34,197,94,.25); }
+}
+
+/* ── Panel ── */
+#nexa-ai-panel {
+  position: fixed;
+  bottom: 165px;
+  right: 20px;
+  width: 360px;
+  max-width: calc(100vw - 32px);
+  height: 500px;
+  max-height: calc(100vh - 170px);
+  background: var(--glass);
+  backdrop-filter: blur(28px) saturate(1.4);
+  -webkit-backdrop-filter: blur(28px) saturate(1.4);
+  border: 1px solid var(--glass-bd2);
+  border-radius: var(--rl);
+  box-shadow: var(--shadow), 0 0 0 1px rgba(255,255,255,.04) inset,
+              0 0 40px rgba(124,110,247,.08);
+  display: flex;
+  flex-direction: column;
+  z-index: 1100;
+  overflow: hidden;
+  transform: translateY(16px) scale(.96);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform .28s cubic-bezier(.34,1.56,.64,1),
+              opacity .22s ease;
+}
+#nexa-ai-panel.open {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* ── Header ── */
+.ai-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--bd);
+  flex-shrink: 0;
+  background: rgba(124,110,247,.07);
+}
+.ai-panel-avatar {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--ac) 0%, var(--ac3) 100%);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .85rem; color: #fff; flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(124,110,247,.4);
+}
+.ai-panel-name   { font-weight: 600; font-size: .82rem; color: var(--tx); }
+.ai-panel-status { font-size: .68rem; color: var(--lo); letter-spacing: .02em; }
+.ai-panel-close {
+  margin-left: auto;
+  width: 26px; height: 26px;
+  border-radius: 6px; border: 1px solid var(--bd2);
+  background: transparent; color: var(--tx3);
+  cursor: pointer; font-size: .72rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: all var(--tr);
+}
+.ai-panel-close:hover { background: var(--sf2); color: var(--tx); }
+
+/* ── Messages ── */
+.ai-msgs {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  scroll-behavior: smooth;
+}
+.ai-msgs::-webkit-scrollbar { width: 3px; }
+.ai-msgs::-webkit-scrollbar-thumb { background: var(--sf3); border-radius: 4px; }
+
+.ai-msg { display: flex; flex-direction: column; gap: 3px; max-width: 88%; }
+.ai-msg.from-ai   { align-self: flex-start; }
+.ai-msg.from-user { align-self: flex-end; }
+
+.ai-bubble {
+  padding: 9px 13px;
+  border-radius: 4px 14px 14px 14px;
+  font-size: .78rem;
+  line-height: 1.6;
+  border: 1px solid var(--bd);
+  background: var(--sf);
+  color: var(--tx);
+  word-break: break-word;
+}
+.ai-msg.from-user .ai-bubble {
+  background: var(--ac);
+  border-color: transparent;
+  color: #fff;
+  border-radius: 14px 4px 14px 14px;
+}
+.ai-msg-time {
+  font-size: .6rem;
+  color: var(--tx3);
+}
+.ai-msg.from-user .ai-msg-time { text-align: right; }
+
+/* ── Typing indicator ── */
+.ai-typing {
+  display: flex; gap: 5px; align-items: center;
+  padding: 10px 14px;
+  background: var(--sf); border: 1px solid var(--bd);
+  border-radius: 4px 14px 14px 14px;
+  align-self: flex-start;
+  width: fit-content;
+}
+.ai-typing span {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--tx3);
+  animation: ai-blink 1.2s infinite;
+}
+.ai-typing span:nth-child(2) { animation-delay: .2s; }
+.ai-typing span:nth-child(3) { animation-delay: .4s; }
+@keyframes ai-blink { 0%,80%,100%{opacity:.25;transform:scale(1)} 40%{opacity:1;transform:scale(1.2)} }
+
+/* ── Quick-reply chips ── */
+.ai-chips {
+  display: flex; gap: 5px; flex-wrap: wrap;
+  padding: 8px 12px 6px;
+  border-top: 1px solid var(--bd);
+  flex-shrink: 0;
+}
+.ai-chip {
+  font-size: .67rem; font-weight: 500;
+  padding: 4px 10px; border-radius: 100px;
+  border: 1px solid var(--bd2);
+  background: var(--sf); color: var(--tx2);
+  cursor: pointer; transition: all var(--tr);
+  white-space: nowrap;
+}
+.ai-chip:hover {
+  background: var(--ac-g);
+  color: var(--ac2);
+  border-color: rgba(var(--ac-rgb), .3);
+  transform: translateY(-1px);
+}
+
+/* ── Input row ── */
+/* ── Input row ── */
+.ai-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 8px 12px 12px;
+
+  flex-shrink: 0;
+}
+
+/* input */
+.ai-input {
+  flex: 1;
+
+  height: 36px;
+
+  background: var(--sf);
+
+  border: 1px solid var(--bd2);
+
+  border-radius: var(--rs);
+
+  padding: 0 11px;
+
+  font-family: var(--fd);
+  font-size: .78rem;
+
+  color: var(--tx);
+
+  outline: none;
+
+  min-width: 0;
+}
+
+.ai-input:focus {
+  border-color: var(--ac);
+  box-shadow: 0 0 0 2px var(--ac-g);
+}
+
+.ai-input::placeholder {
+  color: var(--tx3);
+}
+
+/* send button */
+.ai-send-btn {
+  width: 36px;
+  height: 36px;
+
+  flex-shrink: 0;
+
+  border-radius: var(--rs);
+
+  background: var(--ac);
+
+  border: none;
+
+  color: #fff;
+
+  font-size: .9rem;
+
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  position: relative;
+
+  right: 0;
+  bottom: 0;
+
+  margin: 0;
+}
+
+.ai-send-btn:hover {
+  background: var(--ac2);
+}
+
+.ai-send-btn:active {
+  transform: scale(.9);
+}
+
+
+/* ── Code blocks in bubbles ── */
+.ai-bubble pre {
+  background: rgba(0,0,0,.2);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-family: var(--fm);
+  font-size: .7rem;
+  margin-top: 6px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  border: 1px solid rgba(255,255,255,.06);
+  line-height: 1.5;
+}
+.ai-msg.from-user .ai-bubble pre {
+  background: rgba(0,0,0,.22);
+  border-color: rgba(255,255,255,.14);
+}
+
+/* ── Task inject button ── */
+.ai-task-inject {
+  display: inline-flex; align-items: center; gap: 5px;
+  margin-top: 7px;
+  padding: 6px 12px; border-radius: var(--rs);
+  background: var(--ac-g);
+  border: 1px solid rgba(var(--ac-rgb),.28);
+  color: var(--ac2); font-size: .7rem; font-weight: 600;
+  cursor: pointer; transition: all var(--tr);
+  align-self: flex-start;
+}
+.ai-task-inject:hover {
+  background: var(--ac-g2);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 12px rgba(var(--ac-rgb),.2);
+}
+
+/* ── Mobile ── */
+@media (max-width: 768px) {
+  #nexa-ai-btn {
+    bottom: 120px;
+    right: 12px;
+    width: 46px;
+    height: 46px;
+  }
+  #nexa-ai-panel {
+    bottom: 0;
+    right: 0;
+    left: 0;
+    width: 100%;
+    max-width: 100%;
+    height: 72vh;
+    max-height: 72vh;
+    border-radius: var(--rl) var(--rl) 0 0;
+    transform: translateY(100%);
+  }
+  #nexa-ai-panel.open {
+    transform: translateY(0);
+  }
+}
+
+/* ── Tablet ── */
+@media (min-width: 769px) and (max-width: 1023px) {
+  #nexa-ai-btn  { bottom: 95px; right: 18px; }
+  #nexa-ai-panel {
+    bottom: 150px;
+    right: 18px;
+    width: 340px;
+    height: 480px;
+  }
+}

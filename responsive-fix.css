@@ -157,9 +157,9 @@ html, body { width: 100%; height: 100%; overflow: hidden; max-width: 100%; }
   .task-text { word-break:break-word; overflow-wrap:anywhere; }
 
   /* Floating elements */
-  .undo-banner { bottom:100px; left:12px; right:12px; max-width:none; }
-  .toast-container { bottom:110px; right:12px; left:12px; max-width:none; }
-  .bulk-bar { bottom:100px; }
+  .undo-banner { bottom: 155px !important; left: 12px; right: 12px; max-width: none; }
+  .toast-container { bottom: 175px !important; right: 12px; left: 12px; max-width: none; }
+  .bulk-bar { bottom: 155px !important; }
 
   /* Grids */
   .dash-grid { grid-template-columns:1fr 1fr; gap:8px; }
@@ -600,3 +600,74 @@ html, body { width: 100%; height: 100%; overflow: hidden; max-width: 100%; }
   -webkit-tap-highlight-color: transparent;
 }
 .p-chip:active { transform: scale(0.93) !important; }
+
+
+/* ══════════════════════════════════════════════════════════════
+   MOBILE TOAST — Pill shape (phone only)
+══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+
+  .toast-container {
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+    width: auto !important;
+    max-width: calc(100vw - 48px) !important;
+    min-width: 0 !important;
+    bottom: 180px !important;
+    display: flex !important;
+    flex-direction: column-reverse !important;
+    align-items: center !important;
+    gap: 6px !important;
+    pointer-events: none !important;
+  }
+
+  .toast {
+    border-radius: 100px !important;
+    width: auto !important;
+    max-width: calc(100vw - 48px) !important;
+    min-width: 0 !important;
+    padding: 8px 14px 8px 12px !important;
+    gap: 6px !important;
+    pointer-events: all !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,.28),
+                0 1px 0 rgba(255,255,255,.06) inset !important;
+  }
+
+  .toast .toast-icon { font-size: .78rem !important; flex-shrink: 0 !important; }
+
+  .toast .toast-msg {
+    font-size: .72rem !important;
+    font-weight: 500 !important;
+    line-height: 1.2 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  .toast .toast-close { display: none !important; }
+
+  .toast-progress {
+    border-radius: 0 0 100px 100px !important;
+    height: 2px !important;
+  }
+
+  @keyframes toast-in-pill {
+    from { opacity: 0; transform: translateY(10px) scale(.93); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .toast { animation: toast-in-pill .28s cubic-bezier(.34,1.56,.64,1) both !important; }
+  .toast.toast-out { animation: toast-out .2s cubic-bezier(.4,0,.2,1) forwards !important; }
+
+  body.guest-mode .toast-container { bottom: 220px !important; }
+}
+
+@media (max-width: 420px) {
+  .toast-container { bottom: 130px !important; max-width: calc(100vw - 32px) !important; }
+  .toast { max-width: calc(100vw - 32px) !important; padding: 7px 12px 7px 10px !important; }
+  .toast .toast-msg { font-size: .68rem !important; }
+  body.guest-mode .toast-container { bottom: 230px !important; }
+}
