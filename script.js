@@ -1714,64 +1714,103 @@ const pwaDismiss = $('pwa-dismiss');
 
 /* Helper: hide the install banner */
 function hidePwaBanner() {
-  pwaBanner.classList.add('hidden');
+  if (pwaBanner) pwaBanner.classList.add('hidden');
 }
 
 /* Helper: show the install banner */
 function showPwaBanner() {
-  pwaBanner.classList.remove('hidden');
-  console.log('PWA install available');
+  if (pwaBanner) pwaBanner.classList.remove('hidden');
+  console.log('[PWA] Install banner shown');
 }
 
-/* ── 1. Detect already-installed (standalone) mode ──────────
-   If the app is already installed and opened as a standalone
-   window we never need to show the install prompt.           */
-const isStandalone =
-  window.matchMedia('(display-mode: standalone)').matches ||
-  window.navigator.standalone === true;            /* iOS Safari */
+/* ── Settings card helpers ──────────────────────────────────
+   Update the Settings > Install App card based on current state */
+function _updatePwaSettingsCard() {
+  const installSection   = document.getElementById('pwa-install-section');
+  const installedSection = document.getElementById('pwa-installed-section');
+  const settingsBtn      = document.getElementById('pwa-settings-install-btn');
+  const btnLabel         = document.getElementById('pwa-settings-btn-label');
+  const hint             = document.getElementById('pwa-install-hint');
+  if (!installSection) return;   /* card not in DOM yet */
 
+  if (_pwaIsStandalone()) {
+    /* App is installed / running standalone */
+    installSection.classList.add('hidden');
+    if (installedSection) installedSection.classList.remove('hidden');
+    return;
+  }
+
+  /* Not installed — show install section */
+  installSection.classList.remove('hidden');
+  if (installedSection) installedSection.classList.add('hidden');
+
+  if (deferredPrompt) {
+    /* Install prompt is available */
+    if (settingsBtn) { settingsBtn.disabled = false; }
+    if (btnLabel)    { btnLabel.textContent = 'Install NEXA'; }
+    if (hint)        { hint.textContent = ''; }
+  } else {
+    /* Prompt not yet available (or already used) */
+    if (settingsBtn) { settingsBtn.disabled = true; }
+    if (btnLabel)    { btnLabel.textContent = 'Install NEXA'; }
+    if (hint) {
+      /* Friendly hint for browsers that don't fire the event
+         (e.g. iOS Safari uses Add to Home Screen manually)   */
+      const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+      hint.textContent = isIos
+        ? 'On iOS: tap the Share button then "Add to Home Screen"'
+        : 'Use your browser\'s install option (address bar icon) to install.';
+    }
+  }
+}
+
+/* ── Detect standalone ── */
+function _pwaIsStandalone() {
+  return window.matchMedia('(display-mode: standalone)').matches ||
+         window.navigator.standalone === true;
+}
+
+const isStandalone = _pwaIsStandalone();
+
+/* ── 1. Detect already-installed (standalone) mode ──────────*/
 if (isStandalone) {
   hidePwaBanner();
   console.log('[PWA] Running in standalone mode — install banner suppressed');
 }
 
-/* ── 2. Capture beforeinstallprompt ─────────────────────────
-   Must call e.preventDefault() to suppress the browser's
-   default mini-infobar and control timing ourselves.         */
+/* ── 2. Capture beforeinstallprompt ─────────────────────────*/
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
   deferredPrompt = e;
+  console.log('[PWA] beforeinstallprompt captured');
 
-  /* Don't show if already standalone, or dismissed this session */
+  /* Update settings card immediately so button becomes active */
+  _updatePwaSettingsCard();
+
+  /* Don't show floating banner if already standalone */
   if (isStandalone) return;
+  /* Don't re-show banner if dismissed this session */
   if (sessionStorage.getItem('nexa_pwa_dismissed')) return;
 
   showPwaBanner();
 });
 
-/* ── 3. Install button click ─────────────────────────────────
-   Calls deferredPrompt.prompt() and awaits userChoice.
-   Guards against duplicate calls with promptPending flag.    */
-pwaInstall.addEventListener('click', async () => {
+/* ── Shared trigger function (used by both banner & settings btn) ── */
+async function _triggerPwaInstall(hideFloatingBanner) {
   if (!deferredPrompt || promptPending) return;
 
-  promptPending = true;          /* prevent double-trigger */
-  hidePwaBanner();
+  promptPending = true;
+  if (hideFloatingBanner) hidePwaBanner();
 
   try {
-    deferredPrompt.prompt();     /* show the native install dialog */
+    deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
-
     console.log('[PWA] User choice:', outcome);
 
     if (outcome === 'accepted') {
-      console.log('App installed');
-      deferredPrompt = null;     /* consumed — cannot reuse */
+      console.log('[PWA] App installed');
+      deferredPrompt = null;
     } else {
-      /* User dismissed the native dialog — store for session so
-         we don't re-show the banner immediately, but allow next
-         session to try again (never write to localStorage here,
-         which would permanently block future prompts).         */
       sessionStorage.setItem('nexa_pwa_dismissed', '1');
       deferredPrompt = null;
     }
@@ -1780,35 +1819,64 @@ pwaInstall.addEventListener('click', async () => {
     deferredPrompt = null;
   } finally {
     promptPending = false;
+    _updatePwaSettingsCard();
+  }
+}
+
+/* ── 3. Banner install button click ─────────────────────────*/
+if (pwaInstall) {
+  pwaInstall.addEventListener('click', () => _triggerPwaInstall(true));
+}
+
+/* ── 3b. Settings card install button click ─────────────────*/
+document.addEventListener('click', e => {
+  if (e.target.closest('#pwa-settings-install-btn')) {
+    _triggerPwaInstall(false);
   }
 });
 
-/* ── 4. Dismiss button ───────────────────────────────────────
-   Only session-scoped so the browser can re-offer next visit */
-pwaDismiss.addEventListener('click', () => {
-  hidePwaBanner();
-  sessionStorage.setItem('nexa_pwa_dismissed', '1');
-  console.log('[PWA] Banner dismissed for this session');
-});
+/* ── 4. Dismiss button ───────────────────────────────────────*/
+if (pwaDismiss) {
+  pwaDismiss.addEventListener('click', () => {
+    hidePwaBanner();
+    sessionStorage.setItem('nexa_pwa_dismissed', '1');
+    console.log('[PWA] Banner dismissed for this session');
+  });
+}
 
-/* ── 5. appinstalled event ───────────────────────────────────
-   Fires after a successful installation (any path — including
-   browser UI installs outside our banner).                   */
+/* ── 5. appinstalled event ───────────────────────────────────*/
 window.addEventListener('appinstalled', () => {
   hidePwaBanner();
   deferredPrompt = null;
   promptPending  = false;
-  console.log('App installed');
+  console.log('[PWA] App installed');
+  _updatePwaSettingsCard();
 });
 
-/* ── 6. display-mode change ─────────────────────────────────
-   If the user installs mid-session and the page detects
-   standalone mode, clean up the banner proactively.         */
+/* ── 6. display-mode change ─────────────────────────────────*/
 window.matchMedia('(display-mode: standalone)').addEventListener('change', e => {
   if (e.matches) {
     hidePwaBanner();
     deferredPrompt = null;
     console.log('[PWA] Now running standalone — banner hidden');
+    _updatePwaSettingsCard();
+  }
+});
+
+/* ── 7. Initial settings card state (run after DOM is ready) ─
+   Also re-run whenever the Settings tab is opened, since the
+   card may not have been in the DOM on first run.             */
+function _initPwaSettingsCard() {
+  _updatePwaSettingsCard();
+}
+/* Defer slightly so DOM is fully painted */
+setTimeout(_initPwaSettingsCard, 200);
+
+/* Re-sync when user opens the Settings tab */
+document.addEventListener('click', e => {
+  const tab = e.target.closest('[data-tab]');
+  if (tab && tab.dataset.tab === 'settings') {
+    setTimeout(_updatePwaSettingsCard, 150);
   }
 });
 

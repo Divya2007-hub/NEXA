@@ -769,6 +769,53 @@ body.bulk-mode .drag-handle { display: none !important; }
 }
 .pwa-dismiss:hover { background:var(--hi-b); color:var(--hi); border-color: transparent; }
 
+/* ── PWA Settings Card ── */
+.pwa-install-features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.pwa-feat-chip {
+  font-size: .72rem;
+  font-weight: 500;
+  color: var(--tx2);
+  background: var(--hi-b);
+  border: 1px solid var(--bd);
+  border-radius: 100px;
+  padding: 3px 10px;
+  white-space: nowrap;
+}
+.pwa-settings-install-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: var(--r);
+  border: 1px solid var(--ac);
+  background: var(--ac);
+  color: #fff;
+  font-family: var(--fd);
+  font-size: .82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--tr-spring);
+  letter-spacing: .01em;
+}
+.pwa-settings-install-btn:hover:not(:disabled) {
+  background: var(--ac2);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(var(--ac-rgb, 99,102,241), 0.35);
+}
+.pwa-settings-install-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  border-color: var(--bd);
+  background: var(--hi-b);
+  color: var(--tx2);
+}
+.pwa-btn-icon { font-size: 1rem; line-height: 1; }
+
 /* ══════════════════════════
    TASKS TAB
 ══════════════════════════ */

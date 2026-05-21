@@ -652,6 +652,37 @@
         </div>
 
         <!-- ══ ABOUT CARD — enhanced ══ -->
+        <!-- ══ INSTALL APP CARD ══ -->
+        <div class="settings-card" id="pwa-settings-card">
+          <div class="sc-header"><span class="sc-icon">📲</span><h3 class="sc-title">Install App</h3></div>
+          <div class="sc-body">
+            <!-- Shown when app is NOT installed -->
+            <div id="pwa-install-section">
+              <p class="sc-desc" style="margin-bottom:14px;">Install NEXA on your device for the best experience — works offline, loads instantly, and lives on your home screen.</p>
+              <div class="pwa-install-features">
+                <span class="pwa-feat-chip">⚡ Instant launch</span>
+                <span class="pwa-feat-chip">📶 Works offline</span>
+                <span class="pwa-feat-chip">🔔 Push reminders</span>
+              </div>
+              <button class="settings-action-btn pwa-settings-install-btn" id="pwa-settings-install-btn" style="margin-top:16px;width:100%;" disabled>
+                <span class="pwa-btn-icon">📲</span>
+                <span id="pwa-settings-btn-label">Preparing install…</span>
+              </button>
+              <p class="pwa-install-hint" id="pwa-install-hint" style="font-size:.72rem;color:var(--tx3);margin-top:8px;text-align:center;"></p>
+            </div>
+            <!-- Shown when app IS already installed -->
+            <div id="pwa-installed-section" class="hidden">
+              <div style="display:flex;align-items:center;gap:12px;padding:10px 0;">
+                <span style="font-size:2rem;">✅</span>
+                <div>
+                  <div style="font-weight:600;color:var(--tx);font-size:.9rem;">NEXA is installed!</div>
+                  <div style="font-size:.75rem;color:var(--tx2);margin-top:2px;">Open it from your home screen or app launcher.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="settings-card">
           <div class="sc-header"><span class="sc-icon">✦</span><h3 class="sc-title">About NEXA</h3></div>
           <div class="sc-body">
