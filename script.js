@@ -38,7 +38,7 @@
    ════════════════════════════════════════════════════════════ */
 const FIREBASE_CONFIG = {
   apiKey:            "AIzaSyCd_pwMAWDm-0S81tbY9Zc4KhMfR_DHTR0",
-  authDomain:        "https://nexa-kappa-drab.vercel.app/",
+  authDomain:        "velora-os-5fc9e.firebaseapp.com",
   projectId:         "velora-os-5fc9e",
   storageBucket:     "velora-os-5fc9e.firebasestorage.app",
   messagingSenderId: "744879781525",
@@ -293,85 +293,78 @@ const authShowToast = (msg, type = 'info') => {
 
 let _authBooted = false; /* prevent double-boot on hot reloads */
 
-/* ── OFFLINE COLD-START GUARD ──────────────────────────────────────
-   Firebase Auth requires network on first load. If onAuthStateChanged
-   hasn't fired within 3s (e.g. offline cold-start), we fall back to
-   the cached Firebase auth persistence in IndexedDB / localStorage.
-   This prevents the app from getting stuck on the loading screen.
-──────────────────────────────────────────────────────────────────── */
-const _authTimeout = setTimeout(() => {
-  if (_authBooted) return; // already resolved — do nothing
+/* ── NUCLEAR FALLBACK: if ANYTHING blocks Firebase from responding
+   (wrong authDomain, network issue, Vercel config, cold start offline)
+   this timer fires after 5s and boots the app no matter what.
+   Without this, a single Firebase hiccup = infinite loading screen. ── */
+const _authFallbackTimer = setTimeout(() => {
+  if (_authBooted) return; /* Firebase already responded — do nothing */
   _authBooted = true;
 
-  console.warn('[NEXA] Firebase Auth timeout — booting offline (guest mode)');
+  console.warn('[NEXA] Firebase Auth did not respond within 5s — forcing boot.');
   hideAuthLoader();
 
-  // Try to read cached user from firebase:authUser key (Firebase stores it here)
+  /* Try to recover a cached Firebase user from localStorage */
   let cachedUser = null;
   try {
-    // Firebase SDK stores auth state under this key in localStorage
-    const key = Object.keys(localStorage).find(k => k.startsWith('firebase:authUser'));
-    if (key) {
-      const raw = JSON.parse(localStorage.getItem(key));
-      if (raw && raw.uid) cachedUser = raw;
+    const fbKey = Object.keys(localStorage)
+      .find(k => k.startsWith('firebase:authUser:') || k.includes(':authUser:'));
+    if (fbKey) {
+      const parsed = JSON.parse(localStorage.getItem(fbKey));
+      if (parsed && parsed.uid) cachedUser = parsed;
     }
-  } catch (e) { /* ignore parse errors */ }
+  } catch (_) { /* ignore */ }
 
   if (cachedUser) {
-    // We have a cached user — boot the app in "offline authenticated" mode
+    /* Restore session from cache — user won't need to re-login */
     currentUser = cachedUser;
     document.body.classList.remove('guest-mode');
     hideAuthModal();
-
-    // Populate UI with cached data (best effort)
-    try { populateUserUI(cachedUser); } catch(e) {}
-
+    try { populateUserUI(cachedUser); } catch(_) {}
     bootApp(cachedUser.uid);
-
-    // Show a subtle offline indicator
-    showToast('📶 Offline mode — showing cached data', 't-info');
+    showToast('📶 Offline mode — showing your cached data', 't-info', 4000);
   } else {
-    // No cached user → guest mode
+    /* No cached session — boot as guest so app is usable */
+    currentUser = null;
     document.body.classList.add('guest-mode');
     bootGuestMode();
   }
-}, 3000);
-
-/* ── OFFLINE / SLOW-NETWORK GUARD ──────────────────────────────
-   If Firebase Auth doesn't resolve within 4s (offline cold-start
-   or blocked domain), boot the app anyway so it never gets stuck.
-────────────────────────────────────────────────────────────────*/
-const _authTimeout = setTimeout(() => {
-  if (_authBooted) return;
-  _authBooted = true;
-  hideAuthLoader();
-  console.warn('[NEXA] Auth timeout — booting in guest/offline mode');
-
-  let cachedUser = null;
-  try {
-    const key = Object.keys(localStorage).find(k => k.startsWith('firebase:authUser'));
-    if (key) {
-      const raw = JSON.parse(localStorage.getItem(key));
-      if (raw && raw.uid) cachedUser = raw;
-    }
-  } catch (e) {}
-
-  if (cachedUser) {
-    currentUser = cachedUser;
-    document.body.classList.remove('guest-mode');
-    hideAuthModal();
-    try { populateUserUI(cachedUser); } catch(e) {}
-    bootApp(cachedUser.uid);
-    showToast('📶 Offline — showing cached data', 't-info');
-  } else {
-    document.body.classList.add('guest-mode');
-    bootGuestMode();
-  }
-}, 4000);
+}, 5000);
 
 AUTH.onAuthStateChanged(user => {
-  clearTimeout(_authTimeout); // ← ADD THIS as the first line inside the callback
+  /* Firebase responded — cancel the fallback timer immediately */
+  clearTimeout(_authFallbackTimer);
+
+  /* If fallback already ran, handle sign-in/out transitions only */
+  if (_authBooted) {
+    currentUser = user || null;
+    if (user) {
+      document.body.classList.remove('guest-mode');
+      hideAuthModal();
+      populateUserUI(user);
+      bootApp(user.uid);
+    } else {
+      document.body.classList.add('guest-mode');
+      bootGuestMode();
+    }
+    return;
+  }
+
+  /* Normal first-boot path */
+  _authBooted = true;
   hideAuthLoader();
+  currentUser = user || null;
+
+  if (user) {
+    document.body.classList.remove('guest-mode');
+    hideAuthModal();
+    populateUserUI(user);
+    bootApp(user.uid);
+  } else {
+    document.body.classList.add('guest-mode');
+    bootGuestMode();
+  }
+});
 
 /* ════════════════════════════════════════════════════════════
    ⑪  USER UI — populate sidebar chip + settings profile card
@@ -1821,24 +1814,38 @@ window.matchMedia('(display-mode: standalone)').addEventListener('change', e => 
 
 /* ═══════════════════════════════════════════════════════════
    SERVICE WORKER — registration
-═══════════════════════════════════════════════════════════ */
-
+   ═══════════════════════════════════════════════════════════
+   • Only registers on HTTPS or localhost (browser requirement)
+   • Scope defaults to sw.js location ('/')
+   • Logs success/failure for debugging
+   ═══════════════════════════════════════════════════════════ */
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
+    navigator.serviceWorker
+      .register('/sw.js', { scope: '/' })
+      .then(reg => {
+        console.log('[SW] Registered — scope:', reg.scope);
 
-    navigator.serviceWorker.register('/sw.js')
-      .then((reg) => {
-        console.log('[SW] Registered:', reg.scope);
+        /* Detect SW updates and notify user (optional) */
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              console.log('[SW] New version available');
+            }
+          });
+        });
       })
-      .catch((err) => {
+      .catch(err => {
         console.error('[SW] Registration failed:', err);
+        /* Common causes:
+             • Not on HTTPS / localhost  → deploy to HTTPS
+             • sw.js not found (404)     → check sw.js is in root
+             • sw.js has a syntax error  → open DevTools → Application → SW
+             • Wrong scope               → move sw.js to project root   */
       });
-
   });
 }
-      
-    
-
 
 /* ═══════════════════════════════════════════
    NOTIFICATION PERMISSION
