@@ -38,7 +38,7 @@
    ════════════════════════════════════════════════════════════ */
 const FIREBASE_CONFIG = {
   apiKey:            "AIzaSyCd_pwMAWDm-0S81tbY9Zc4KhMfR_DHTR0",
-  authDomain:        "velora-os-5fc9e.firebaseapp.com",
+  authDomain:        "https://nexa-kappa-drab.vercel.app/",
   projectId:         "velora-os-5fc9e",
   storageBucket:     "velora-os-5fc9e.firebasestorage.app",
   messagingSenderId: "744879781525",
@@ -337,11 +337,40 @@ const _authTimeout = setTimeout(() => {
   }
 }, 3000);
 
-AUTH.onAuthStateChanged(user => {
-  /* Clear the offline fallback timeout — Firebase responded in time */
-  clearTimeout(_authTimeout);
+/* ── OFFLINE / SLOW-NETWORK GUARD ──────────────────────────────
+   If Firebase Auth doesn't resolve within 4s (offline cold-start
+   or blocked domain), boot the app anyway so it never gets stuck.
+────────────────────────────────────────────────────────────────*/
+const _authTimeout = setTimeout(() => {
+  if (_authBooted) return;
+  _authBooted = true;
+  hideAuthLoader();
+  console.warn('[NEXA] Auth timeout — booting in guest/offline mode');
 
-  /* Only hide loader once */
+  let cachedUser = null;
+  try {
+    const key = Object.keys(localStorage).find(k => k.startsWith('firebase:authUser'));
+    if (key) {
+      const raw = JSON.parse(localStorage.getItem(key));
+      if (raw && raw.uid) cachedUser = raw;
+    }
+  } catch (e) {}
+
+  if (cachedUser) {
+    currentUser = cachedUser;
+    document.body.classList.remove('guest-mode');
+    hideAuthModal();
+    try { populateUserUI(cachedUser); } catch(e) {}
+    bootApp(cachedUser.uid);
+    showToast('📶 Offline — showing cached data', 't-info');
+  } else {
+    document.body.classList.add('guest-mode');
+    bootGuestMode();
+  }
+}, 4000);
+
+AUTH.onAuthStateChanged(user => {
+  clearTimeout(_authTimeout); // ← ADD THIS as the first line inside the callback
   hideAuthLoader();
 
 /* ════════════════════════════════════════════════════════════
