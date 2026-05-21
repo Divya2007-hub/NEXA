@@ -1766,17 +1766,28 @@ function _updatePwaSettingsCard() {
 
 /* ── Detect standalone ── */
 function _pwaIsStandalone() {
-  /* Only trust the display-mode media query when the page was actually
-     launched from an installed PWA shortcut (not just a browser tab on
-     a site that happens to have a manifest).  We use a localStorage flag
-     that is written exclusively by the real `appinstalled` DOM event, so
-     a false-positive from the media query alone cannot trigger this. */
-  const installedFlag = localStorage.getItem('nexa_pwa_installed') === '1';
+  /* Rule 1: iOS Safari sets navigator.standalone directly — always reliable. */
+  if (window.navigator.standalone === true) return true;
+
+  /* Rule 2: display-mode media query — only trustworthy when the browser
+     chrome (address bar, tabs) is genuinely absent.  In a normal browser
+     tab the query can still match on Chromium-based browsers if the site
+     has a manifest, so we guard it with a second signal: the page must
+     have been opened WITHOUT a referrer (standalone launches have none)
+     AND the localStorage flag must be set by a real appinstalled event.
+     Both must be true — either alone can be spoofed or stale. */
   const standaloneMode =
     window.matchMedia('(display-mode: standalone)').matches ||
-    window.matchMedia('(display-mode: minimal-ui)').matches  ||
-    window.navigator.standalone === true;                    // iOS Safari
-  return installedFlag && standaloneMode;
+    window.matchMedia('(display-mode: minimal-ui)').matches;
+
+  if (!standaloneMode) {
+    /* Definitely in a browser tab — clear any stale flag */
+    localStorage.removeItem('nexa_pwa_installed');
+    return false;
+  }
+
+  /* display-mode matches — verify with the localStorage flag */
+  return localStorage.getItem('nexa_pwa_installed') === '1';
 }
 
 const isStandalone = _pwaIsStandalone();
