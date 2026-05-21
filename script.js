@@ -1792,38 +1792,24 @@ window.matchMedia('(display-mode: standalone)').addEventListener('change', e => 
 
 /* ═══════════════════════════════════════════════════════════
    SERVICE WORKER — registration
-   ═══════════════════════════════════════════════════════════
-   • Only registers on HTTPS or localhost (browser requirement)
-   • Scope defaults to sw.js location ('/')
-   • Logs success/failure for debugging
-   ═══════════════════════════════════════════════════════════ */
+═══════════════════════════════════════════════════════════ */
+
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker
-      .register('/sw.js', { scope: '/' })
-      .then(reg => {
-        console.log('[SW] Registered — scope:', reg.scope);
 
-        /* Detect SW updates and notify user (optional) */
-        reg.addEventListener('updatefound', () => {
-          const newWorker = reg.installing;
-          newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              console.log('[SW] New version available');
-            }
-          });
-        });
+    navigator.serviceWorker.register('/sw.js')
+      .then((reg) => {
+        console.log('[SW] Registered:', reg.scope);
       })
-      .catch(err => {
+      .catch((err) => {
         console.error('[SW] Registration failed:', err);
-        /* Common causes:
-             • Not on HTTPS / localhost  → deploy to HTTPS
-             • sw.js not found (404)     → check sw.js is in root
-             • sw.js has a syntax error  → open DevTools → Application → SW
-             • Wrong scope               → move sw.js to project root   */
       });
+
   });
 }
+      
+    
+
 
 /* ═══════════════════════════════════════════
    NOTIFICATION PERMISSION

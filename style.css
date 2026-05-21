@@ -88,8 +88,7 @@
 [data-theme="light"] .sidebar      { background: #ffffff; border-right-color: rgba(0,0,0,.07); }
 [data-theme="light"] .topbar       { background: rgba(244,245,248,.96); border-bottom-color: rgba(0,0,0,.07); }
 
-/* ── Google Font import ── */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
 
 /* ── Base Reset ── */
 *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
