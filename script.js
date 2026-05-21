@@ -1766,8 +1766,17 @@ function _updatePwaSettingsCard() {
 
 /* ── Detect standalone ── */
 function _pwaIsStandalone() {
-  return window.matchMedia('(display-mode: standalone)').matches ||
-         window.navigator.standalone === true;
+  /* Only trust the display-mode media query when the page was actually
+     launched from an installed PWA shortcut (not just a browser tab on
+     a site that happens to have a manifest).  We use a localStorage flag
+     that is written exclusively by the real `appinstalled` DOM event, so
+     a false-positive from the media query alone cannot trigger this. */
+  const installedFlag = localStorage.getItem('nexa_pwa_installed') === '1';
+  const standaloneMode =
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.matchMedia('(display-mode: minimal-ui)').matches  ||
+    window.navigator.standalone === true;                    // iOS Safari
+  return installedFlag && standaloneMode;
 }
 
 const isStandalone = _pwaIsStandalone();
@@ -1809,6 +1818,7 @@ async function _triggerPwaInstall(hideFloatingBanner) {
 
     if (outcome === 'accepted') {
       console.log('[PWA] App installed');
+      localStorage.setItem('nexa_pwa_installed', '1');
       deferredPrompt = null;
     } else {
       sessionStorage.setItem('nexa_pwa_dismissed', '1');
@@ -1849,7 +1859,9 @@ window.addEventListener('appinstalled', () => {
   hidePwaBanner();
   deferredPrompt = null;
   promptPending  = false;
-  console.log('[PWA] App installed');
+  /* Persist install flag so _pwaIsStandalone() is reliable on next launch */
+  localStorage.setItem('nexa_pwa_installed', '1');
+  console.log('[PWA] App installed — flag saved');
   _updatePwaSettingsCard();
 });
 
