@@ -293,41 +293,56 @@ const authShowToast = (msg, type = 'info') => {
 
 let _authBooted = false; /* prevent double-boot on hot reloads */
 
-AUTH.onAuthStateChanged(user => {
-  /* Only hide loader once */
-  hideAuthLoader();
-
-  /* Prevent double-boot */
-  if (_authBooted) {
-    /* Subsequent state changes (sign-in / sign-out) */
-    currentUser = user || null;
-    if (user) {
-      document.body.classList.remove('guest-mode');
-      hideAuthModal();
-      populateUserUI(user);
-      bootApp(user.uid);
-    } else {
-      document.body.classList.add('guest-mode');
-      bootGuestMode();
-    }
-    return;
-  }
+/* ── OFFLINE COLD-START GUARD ──────────────────────────────────────
+   Firebase Auth requires network on first load. If onAuthStateChanged
+   hasn't fired within 3s (e.g. offline cold-start), we fall back to
+   the cached Firebase auth persistence in IndexedDB / localStorage.
+   This prevents the app from getting stuck on the loading screen.
+──────────────────────────────────────────────────────────────────── */
+const _authTimeout = setTimeout(() => {
+  if (_authBooted) return; // already resolved — do nothing
   _authBooted = true;
 
-  currentUser = user || null;
+  console.warn('[NEXA] Firebase Auth timeout — booting offline (guest mode)');
+  hideAuthLoader();
 
-  if (user) {
-    /* Authenticated user — remove guest lock, boot with their data */
+  // Try to read cached user from firebase:authUser key (Firebase stores it here)
+  let cachedUser = null;
+  try {
+    // Firebase SDK stores auth state under this key in localStorage
+    const key = Object.keys(localStorage).find(k => k.startsWith('firebase:authUser'));
+    if (key) {
+      const raw = JSON.parse(localStorage.getItem(key));
+      if (raw && raw.uid) cachedUser = raw;
+    }
+  } catch (e) { /* ignore parse errors */ }
+
+  if (cachedUser) {
+    // We have a cached user — boot the app in "offline authenticated" mode
+    currentUser = cachedUser;
     document.body.classList.remove('guest-mode');
     hideAuthModal();
-    populateUserUI(user);
-    bootApp(user.uid);
+
+    // Populate UI with cached data (best effort)
+    try { populateUserUI(cachedUser); } catch(e) {}
+
+    bootApp(cachedUser.uid);
+
+    // Show a subtle offline indicator
+    showToast('📶 Offline mode — showing cached data', 't-info');
   } else {
-    /* No user — show full UI in guest/preview mode */
+    // No cached user → guest mode
     document.body.classList.add('guest-mode');
     bootGuestMode();
   }
-});
+}, 3000);
+
+AUTH.onAuthStateChanged(user => {
+  /* Clear the offline fallback timeout — Firebase responded in time */
+  clearTimeout(_authTimeout);
+
+  /* Only hide loader once */
+  hideAuthLoader();
 
 /* ════════════════════════════════════════════════════════════
    ⑪  USER UI — populate sidebar chip + settings profile card

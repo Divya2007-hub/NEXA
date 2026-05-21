@@ -19,6 +19,9 @@ const PRECACHE_URLS = [
   '/reminders.css',
   '/due-datetime.css',
   '/feedback.css',
+  '/clickfix.css',
+  '/nexa-ai.css',
+
   '/script.js',
   '/sync.js',
   '/sync-patch.js',
@@ -26,10 +29,15 @@ const PRECACHE_URLS = [
   '/reminders.js',
   '/due-datetime-patch.js',
   '/feedback.js',
+  '/clickfix.js',
+  '/nexa-ai.js',
+  '/smart-input.js',
+
   '/manifest.json',
   '/favicon.ico',
+
   '/icons/icon-192.png',
-  '/icons/icon-512.png',
+  '/icons/icon-512.png'
 ];
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -40,10 +48,13 @@ self.addEventListener('install', event => {
     caches.open(CACHE_STATIC).then(cache => {
       return cache.addAll(PRECACHE_URLS.map(url => {
         return new Request(url, { cache: 'reload' });
-      })).catch(err => {
-        /* Non-fatal: SW still installs even if some assets are missing */
-        console.warn('[SW] Pre-cache partial failure:', err);
-      });
+      }))
+      .catch(err => {
+  /* Non-fatal: SW still installs even if some assets are missing */
+  console.warn('[SW] Pre-cache partial failure — some assets may be unavailable offline:', err);
+  // Don't reject — partial cache is better than no cache
+  return Promise.resolve();
+});
     }).then(() => self.skipWaiting())
   );
 });
