@@ -979,14 +979,23 @@
   }
 
   function _bindSettingsEvents(card) {
-    /* Request permission */
+    /* Request permission — directly triggers the browser dialog from settings */
     card.querySelector('#rs-request-btn')?.addEventListener('click', async () => {
-      if (_perm.status === 'default') {
-        _showPrePrompt(null);
-      } else if (_perm.status === 'denied') {
-        _showToast('Notifications are blocked. Open browser Settings → Site Settings → Notifications.', 5000);
-      } else {
+      if (_perm.status === 'granted') {
         _showToast('Notifications are already enabled ✅');
+        return;
+      }
+      if (_perm.status === 'denied') {
+        _showToast('Notifications are blocked. Open browser Settings → Site Settings → Notifications to allow them.', 5500);
+        return;
+      }
+      /* status === 'default': request directly without the pre-prompt overlay */
+      const result = await _perm.request();
+      _refreshAllSettingsUI();
+      if (result === 'granted') {
+        _showToast('🔔 Notifications enabled! Set reminders on any task with a due date.');
+      } else if (result === 'denied') {
+        _showToast('Notifications blocked — open browser Settings → Site Settings → Notifications to allow.', 5000);
       }
     });
 

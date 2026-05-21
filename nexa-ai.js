@@ -414,9 +414,38 @@ RULES:
     }
   }
 
+  // ── TAB VISIBILITY ────────────────────────────────────────
+  // Show the AI FAB only when the Tasks tab is active
+  function _syncVisibility() {
+    const btn   = document.getElementById('nexa-ai-btn');
+    const panel = document.getElementById('nexa-ai-panel');
+    if (!btn) return;
+    const tasksPanel = document.getElementById('tab-tasks');
+    const onTasksTab = tasksPanel && tasksPanel.classList.contains('active');
+    btn.style.display = onTasksTab ? '' : 'none';
+    // Auto-close panel if we leave the tasks tab
+    if (!onTasksTab && _open) _close();
+  }
+
+  function _watchTabs() {
+    // Listen for nav-item clicks (switchTab fires these)
+    document.querySelectorAll('.nav-item').forEach(btn => {
+      btn.addEventListener('click', () => setTimeout(_syncVisibility, 50));
+      btn.addEventListener('touchend', () => setTimeout(_syncVisibility, 50));
+    });
+    // Also observe class changes on tab panels for programmatic switches
+    document.querySelectorAll('.tab-panel').forEach(panel => {
+      new MutationObserver(_syncVisibility).observe(panel, {
+        attributes: true, attributeFilter: ['class']
+      });
+    });
+    _syncVisibility();
+  }
+
   // ── INIT ─────────────────────────────────────────────────
   function _init() {
     _buildUI();
+    _watchTabs();
     console.info('[NexaAI] v2.0 ready.');
   }
 
