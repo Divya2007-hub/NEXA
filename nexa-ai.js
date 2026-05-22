@@ -22,8 +22,10 @@ You can:
 
 RULES:
 - When creating/updating tasks return ONLY a JSON block like:
-  \`\`\`json
-  {"tasks":[{"text":"...","priority":"high|medium|low|urgent","due":"YYYY-MM-DD or null","dueTime":"HH:MM or null","notes":"optional"}]}
+  \`\`\`json{"tasks":[{"text":"...","priority":"urgent|high|medium|low (REQUIRED - infer from context, default low)","due":"YYYY-MM-DD or null","dueTime":"HH:MM or null","notes":"optional"}]}
+- NEVER default priority to medium — use low unless the user's words imply urgency
+- urgent = "asap/urgent/critical/emergency", high = "important/must/need", medium = "should", low = everything else
+  
   \`\`\`
 - Keep responses short and app-friendly (3-6 lines max unless asked for more)
 - Never include unnecessary explanations
@@ -384,7 +386,10 @@ RULES:
       id: uid(),
       text: t.text || 'Untitled task',
       done: false,
-      pri: t.priority || t.pri || 'low',
+      pri: (() => {
+      const p = (t.priority || t.pri || 'low').toLowerCase();
+      return ['urgent','high','medium','low'].includes(p) ? p : 'low';
+      })(),
       due: t.due || null,
       dueTime: t.dueTime || null,
       notes: t.notes || '',

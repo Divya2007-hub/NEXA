@@ -66,6 +66,9 @@
     // We just make sure our CSS (.sidebar.open) tracks overlay.visible.
 
 
+    const hamburger    = document.getElementById('hamburger');
+    const sidebarClose = document.getElementById('sidebar-close');
+
     if (hamburger) {
       hamburger.addEventListener('click', function () {
         // Small delay so script.js fires first, then we sync

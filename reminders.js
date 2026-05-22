@@ -890,7 +890,7 @@
   /* ═══════════════════════════════════════════════════
      SETTINGS PAGE CARD
   ═══════════════════════════════════════════════════ */
-  function _injectSettingsSection() {
+function _injectSettingsSection() {
     /* Inject into the existing settings tab (id="tab-settings") */
     const settingsGrid = document.querySelector('#tab-settings .settings-grid');
     if (!settingsGrid || settingsGrid.querySelector('#nexa-reminder-settings-card')) return;
@@ -907,7 +907,6 @@
       </div>
       <div class="sc-body reminder-settings-card">
 
-        <!-- Permission row -->
         <div class="reminder-settings-row">
           <div>
             <div class="rs-label">Notification permission</div>
@@ -916,7 +915,6 @@
           <span class="rs-perm-status" id="rs-perm-status">…</span>
         </div>
 
-        <!-- Request / Test row -->
         <div class="reminder-settings-row" id="rs-request-row">
           <div>
             <div class="rs-label">Enable reminders</div>
@@ -925,7 +923,14 @@
           <button class="rs-action-btn" id="rs-request-btn">Request permission</button>
         </div>
 
-        <!-- Default offset -->
+        <div class="reminder-settings-row" id="pwa-mechanics-row">
+          <div>
+            <div class="rs-label">NEXA Desktop Engine</div>
+            <div class="rs-sub" id="pwa-status-label">Checking configuration...</div>
+          </div>
+          <button class="rs-action-btn" id="pwa-install-btn" style="display: none;" disabled>Install NEXA App</button>
+        </div>
+
         <div class="reminder-settings-row">
           <div>
             <div class="rs-label">Default reminder time</div>
@@ -938,7 +943,6 @@
           </select>
         </div>
 
-        <!-- Snooze duration -->
         <div class="reminder-settings-row">
           <div>
             <div class="rs-label">Snooze duration</div>
@@ -949,7 +953,6 @@
                  aria-label="Snooze duration in minutes" style="width:60px"/>
         </div>
 
-        <!-- Active count -->
         <div class="reminder-settings-row">
           <div>
             <div class="rs-label">Active reminders</div>
@@ -958,7 +961,6 @@
           <span class="rs-perm-status default" id="rs-active-count">0</span>
         </div>
 
-        <!-- Clear all -->
         <div class="reminder-settings-row">
           <div>
             <div class="rs-label">Clear all reminders</div>
@@ -974,31 +976,29 @@
     /* Insert before the first card (top of grid) */
     settingsGrid.insertBefore(card, settingsGrid.firstChild);
 
-    _bindSettingsEvents(card);
+    // 🟢 ADDED: Handle the immediate initial text/visibility status based on environment
+    const installBtn = card.querySelector('#pwa-install-btn');
+    const statusLabel = card.querySelector('#pwa-status-label');
+    
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      statusLabel.textContent = 'Installed';
+      statusLabel.style.color = 'var(--lo)';
+      installBtn.style.display = 'none';
+    } else if (window.deferredNexaPrompt) {
+      installBtn.disabled = false;
+      installBtn.style.display = 'inline-flex';
+      statusLabel.textContent = 'App ready for offline installation';
+    } else {
+      installBtn.style.display = 'inline-flex';
+      installBtn.disabled = true;
+      statusLabel.textContent = 'Awaiting system configuration...';
+    }
+
+  _bindSettingsEvents(card);
     _refreshSettingsPermStatus();
   }
 
   function _bindSettingsEvents(card) {
-    /* Request permission — directly triggers the browser dialog from settings */
-    card.querySelector('#rs-request-btn')?.addEventListener('click', async () => {
-      if (_perm.status === 'granted') {
-        _showToast('Notifications are already enabled ✅');
-        return;
-      }
-      if (_perm.status === 'denied') {
-        _showToast('Notifications are blocked. Open browser Settings → Site Settings → Notifications to allow them.', 5500);
-        return;
-      }
-      /* status === 'default': request directly without the pre-prompt overlay */
-      const result = await _perm.request();
-      _refreshAllSettingsUI();
-      if (result === 'granted') {
-        _showToast('🔔 Notifications enabled! Set reminders on any task with a due date.');
-      } else if (result === 'denied') {
-        _showToast('Notifications blocked — open browser Settings → Site Settings → Notifications to allow.', 5000);
-      }
-    });
-
     /* Default offset */
     card.querySelector('#rs-default-offset')?.addEventListener('change', (e) => {
       const settings = _loadSettings();
@@ -1347,5 +1347,37 @@
   } else {
     setTimeout(_init, 80);
   }
+
+  // ═══════════════════════════════════════════════════
+// PWA ENGINE CONFIGURATION (FIX FOR INSTALL BUTTON)
+// ═══════════════════════════════════════════════════
+window.deferredNexaPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  window.deferredNexaPrompt = e;
+  
+  // Directly update the button if the settings panel is already open
+  const installBtn = document.getElementById('pwa-install-btn');
+  const statusLabel = document.getElementById('pwa-status-label');
+  if (installBtn && statusLabel) {
+    installBtn.disabled = false;
+    installBtn.style.display = 'inline-flex';
+    statusLabel.textContent = 'App can be installed for offline access';
+    statusLabel.style.color = 'var(--tx2)';
+  }
+});
+
+window.addEventListener('appinstalled', () => {
+  window.deferredNexaPrompt = null;
+  const installBtn = document.getElementById('pwa-install-btn');
+  const statusLabel = document.getElementById('pwa-status-label');
+  if (installBtn && statusLabel) {
+    installBtn.disabled = true;
+    installBtn.style.display = 'none';
+    statusLabel.textContent = 'Installed';
+    statusLabel.style.color = 'var(--lo)';
+  }
+});
 
 })();

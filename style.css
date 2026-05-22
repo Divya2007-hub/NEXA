@@ -2842,3 +2842,270 @@ body.guest-mode .toast-container { bottom: 130px; }
   }
 }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   MOBILE INPUT BAR — COMPLETE FIX
+   Fixes: dropdown visibility, stacking, touch interactions
+══════════════════════════════════════════════════════════════ */
+
+/* ── Fix select/option visibility on ALL platforms ── */
+.recur-select,
+.date-input,
+#recur-select,
+#due-date,
+#due-time {
+  background: var(--sf2) !important;
+  color: var(--tx) !important;
+  border: 1px solid var(--bd2) !important;
+  border-radius: var(--rs) !important;
+  font-family: var(--fd) !important;
+  font-size: .75rem !important;
+  padding: 5px 8px !important;
+  outline: none !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  cursor: pointer !important;
+  min-height: 32px !important;
+}
+
+/* Select arrow icon */
+.recur-select,
+#recur-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238b95a3'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 8px center !important;
+  padding-right: 24px !important;
+}
+
+/* Options inside selects */
+.recur-select option,
+#recur-select option,
+.rs-default-offset option,
+#rs-default-offset option,
+#rs-snooze {
+  background: #1c1f2a !important;
+  color: #f0f1f5 !important;
+}
+
+[data-theme="light"] .recur-select option,
+[data-theme="light"] #recur-select option {
+  background: #ffffff !important;
+  color: #0d0f16 !important;
+}
+
+[data-theme="light"] .recur-select,
+[data-theme="light"] .date-input,
+[data-theme="light"] #recur-select,
+[data-theme="light"] #due-date,
+[data-theme="light"] #due-time {
+  background: #f7f8fb !important;
+  color: #0d0f16 !important;
+  border-color: rgba(0,0,0,.12) !important;
+}
+
+/* ── Mobile input bar complete layout fix ── */
+@media (max-width: 768px) {
+  .input-bar {
+    padding: 10px 12px max(12px, env(safe-area-inset-bottom, 12px)) !important;
+    background: #0d0f16 !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-top: 1px solid rgba(255,255,255,.08) !important;
+  }
+
+  .input-row {
+    gap: 6px !important;
+    margin-bottom: 8px !important;
+  }
+
+  .task-input {
+    height: 44px !important;
+    font-size: .85rem !important;
+    border-radius: 12px !important;
+  }
+
+  .add-btn {
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 12px !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Smart parse trigger button */
+  .sip-trigger-btn {
+    width: 44px !important;
+    height: 44px !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Priority chips row */
+  .input-meta {
+    gap: 6px !important;
+    margin-top: 6px !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .priority-chips {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    gap: 5px !important;
+    padding-bottom: 2px !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+  }
+  .priority-chips::-webkit-scrollbar { display: none !important; }
+
+  .p-chip {
+    flex-shrink: 0 !important;
+    font-size: .72rem !important;
+    padding: 5px 12px !important;
+    min-height: 30px !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+
+  /* Bottom row: Repeat | Due | Time — visible and properly sized */
+  .input-meta-right {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    gap: 6px !important;
+    align-items: center !important;
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+  }
+  .input-meta-right::-webkit-scrollbar { display: none !important; }
+
+  .recur-wrap,
+  .date-wrap,
+  .due-time-wrap {
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    flex-shrink: 0 !important;
+    background: rgba(255,255,255,.05) !important;
+    border: 1px solid rgba(255,255,255,.08) !important;
+    border-radius: 8px !important;
+    padding: 4px 8px !important;
+  }
+
+  .date-label {
+    display: block !important;
+    font-size: .62rem !important;
+    color: #8b95a3 !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+  }
+
+  .recur-select,
+  .date-input,
+  #recur-select,
+  #due-date,
+  #due-time,
+  .due-time-input {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    font-size: .72rem !important;
+    color: #f0f1f5 !important;
+    min-height: 24px !important;
+    min-width: 60px !important;
+    max-width: 100px !important;
+  }
+
+  /* Fix the dropdown arrow for mobile */
+  .recur-select,
+  #recur-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238b95a3'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 2px center !important;
+    padding-right: 16px !important;
+  }
+}
+
+/* ── Task actions: always visible on mobile (no hover) ── */
+@media (max-width: 768px) {
+  .task-actions {
+    opacity: 1 !important;
+    display: flex !important;
+    gap: 2px !important;
+  }
+
+  .edit-btn, .delete-btn, .notes-btn, .reminder-btn {
+    width: 30px !important;
+    height: 30px !important;
+    font-size: .78rem !important;
+    opacity: 1 !important;
+  }
+
+  /* Smaller drag handle on mobile */
+  .drag-handle {
+    opacity: 0.4 !important;
+    font-size: .8rem !important;
+  }
+
+  /* Task cards slightly more padding */
+  .task-item {
+    padding: 10px 10px 10px 14px !important;
+    gap: 8px !important;
+  }
+
+  /* Task meta wraps properly */
+  .task-meta {
+    flex-wrap: wrap !important;
+    gap: 4px !important;
+    margin-top: 4px !important;
+  }
+}
+
+/* ── Filter bar: always scrollable, never wraps on mobile ── */
+@media (max-width: 768px) {
+  .filter-bar {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    padding-bottom: 2px !important;
+    gap: 5px !important;
+  }
+  .filter-bar::-webkit-scrollbar { display: none !important; }
+  .filter-btn {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    font-size: .72rem !important;
+    padding: 5px 10px !important;
+  }
+
+  /* Overdue filter badge */
+  .filter-btn .fc {
+    font-size: .6rem !important;
+  }
+}
+
+/* ── Smart parse preview on mobile ── */
+@media (max-width: 768px) {
+  #smart-input-preview {
+    left: 8px !important;
+    right: 8px !important;
+    bottom: 160px !important;
+    border-radius: 14px !important;
+    max-width: calc(100vw - 16px) !important;
+  }
+
+  .sip-title { font-size: .82rem !important; }
+  .sip-desc  { font-size: .7rem !important; }
+
+  .sip-actions {
+    gap: 6px !important;
+  }
+  .sip-btn {
+    flex: 1 !important;
+    text-align: center !important;
+    padding: 8px 10px !important;
+    font-size: .74rem !important;
+  }
+}
