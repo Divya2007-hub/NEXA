@@ -181,7 +181,7 @@ RULES FOR TASK OUTPUTS:
 
     try {
       // 🔗 CHANGED: Pointing to your live Render proxy backend web service instead of Anthropic directly
-      const res = await fetch('https://your-render-app-name.onrender.com/api/chat', { 
+      const res = await fetch('https://nexa-6br9.onrender.com', { 
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
