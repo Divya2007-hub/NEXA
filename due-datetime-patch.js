@@ -58,21 +58,8 @@
      1. INJECT TIME INPUT into the creation bar
   ═══════════════════════════════════════════════════ */
   function _injectTimeInput() {
-    const dateWrap = document.querySelector('.date-wrap');
-    if (!dateWrap || document.getElementById('due-time')) return;
-
-    // Build time-wrap sibling
-    const timeWrap = document.createElement('div');
-    timeWrap.className = 'date-wrap due-time-wrap';
-    timeWrap.innerHTML = `
-      <label for="due-time" class="date-label">Time</label>
-      <input type="time" id="due-time" class="date-input due-time-input"
-             aria-label="Due time (optional)" title="Due time (optional)"/>`;
-
-    // Insert right after the date-wrap
-    dateWrap.parentNode.insertBefore(timeWrap, dateWrap.nextSibling);
-
-    // Clear time when date is cleared
+    // Time input is now hardcoded in index.html
+    // Just wire the clear-on-date-clear behavior
     const dateInp = document.getElementById('due-date');
     const timeInp = document.getElementById('due-time');
     if (dateInp && timeInp) {
@@ -81,7 +68,6 @@
       });
     }
   }
-
   /* ═══════════════════════════════════════════════════
      2. PATCH addTask — save dueTime on the task object
   ═══════════════════════════════════════════════════ */

@@ -1,5 +1,5 @@
 /**
- * NEXA — AI Assistant  |  nexa-ai.js  v2.0
+ * NEXA — AI Assistant  |  nexa-ai.js  v2.0 (Patched)
  * Uses the Anthropic API via the artifact proxy (no CORS issues).
  * Integrates with window.tasks, window._nexaRender, window.FireSync.
  * Load AFTER all other scripts.
@@ -8,29 +8,19 @@
 
 (function () {
 
-  const SYSTEM_PROMPT = `You are Nexa AI, an intelligent productivity assistant inside a task management app called NEXA.
-Your job is to help users plan, organize, and complete their tasks efficiently.
-Behave like a real in-app assistant — not a chatbot.
-Focus on: helping users complete tasks faster, organizing their day, reducing overload, giving actionable outputs.
+  const SYSTEM_PROMPT = `You are Nexa AI, an intelligent productivity partner inside the NEXA task management application.
+Your core goal is to help users plan, organize, and execute their schedules dynamically.
 
-You can:
-1. Create tasks from natural language
-2. Suggest schedules
-3. Optimize productivity
-4. Summarize daily progress
-5. Improve reminders and due dates
+CRITICAL ENGAGEMENT RULE:
+- While your interface emphasizes productivity, you are a companion, not a rigid menu.
+- If the user greets you, engages in casual chitchat, or requests to be your friend, step out of restrictive 'task-only' parameters. Respond to them conversationally with warmth, empathy, and genuine interest.
+- Keep responses concise, direct, and dashboard-friendly (3-6 lines max unless specifically prompted for extensive output).
 
-RULES:
+RULES FOR TASK OUTPUTS:
 - When creating/updating tasks return ONLY a JSON block like:
   \`\`\`json{"tasks":[{"text":"...","priority":"urgent|high|medium|low (REQUIRED - infer from context, default low)","due":"YYYY-MM-DD or null","dueTime":"HH:MM or null","notes":"optional"}]}
 - NEVER default priority to medium — use low unless the user's words imply urgency
-- urgent = "asap/urgent/critical/emergency", high = "important/must/need", medium = "should", low = everything else
-  
-  \`\`\`
-- Keep responses short and app-friendly (3-6 lines max unless asked for more)
-- Never include unnecessary explanations
-- If information is missing, infer logically
-- Be direct, practical, friendly`;
+- urgent = "asap/urgent/critical/emergency", high = "important/must/need", medium = "should", low = everything else`;
 
   const CHIPS = [
     { label: '📅 Plan my day',     msg: 'Help me plan my day with my current tasks' },
@@ -173,7 +163,7 @@ RULES:
     return text;
   }
 
-  // ── SEND ──────────────────────────────────────────────────
+  // ── SEND (Patched to communicate through your server.mjs) ──
   async function _send(msg) {
     msg = (msg || '').trim();
     if (!msg) return;
@@ -190,14 +180,11 @@ RULES:
     _history.push({ role: 'user', content: userContent });
 
     try {
-      // ── Use the artifact-available Anthropic API proxy ──
-      // This avoids CORS by calling through the environment's
-      // built-in proxy which handles auth headers server-side.
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
+      // 🔗 CHANGED: Pointing to your live Render proxy backend web service instead of Anthropic directly
+      const res = await fetch('https://your-render-app-name.onrender.com/api/chat', { 
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'anthropic-dangerous-direct-browser-access': 'true',
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           model: 'claude-sonnet-4-20250514',
@@ -208,7 +195,6 @@ RULES:
       });
 
       if (!res.ok) {
-        // HTTP error — fall back to smart local response
         throw new Error(`HTTP ${res.status}`);
       }
 
@@ -248,8 +234,10 @@ RULES:
       }
 
     } catch (e) {
+      console.error("[Nexa Proxy Connection Failed]", e);
       _hideTyping();
       _history.pop();
+      
       // ── Smart local fallback ──
       const fallback = _localFallback(msg);
       _history.push({ role: 'assistant', content: fallback });
@@ -276,9 +264,7 @@ RULES:
       }
     }
   }
-
   // ── SMART LOCAL FALLBACK ──────────────────────────────────
-  // Handles common queries without needing the API
   function _localFallback(msg) {
     const lower = msg.toLowerCase();
     const tasks = window.tasks || [];
@@ -349,11 +335,15 @@ RULES:
       return `I can help you set reminders! Click the 🔔 bell icon on any task to set a reminder time. You can also add due dates using the Due field when creating tasks.\n\nWant me to create a task with a specific time?`;
     }
 
-    // ── GREETINGS ──
-    if (lower.match(/^(hi|hello|hey|good morning|good evening|what's up)/)) {
+    // ── GREETINGS & CASUAL INTERACTION ──
+    if (lower.match(/^(hi|hello|hey|good morning|good afternoon|good evening|what's up)/)) {
       const hour = new Date().getHours();
       const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
-      return `${greeting}! 👋 I'm Nexa AI. I can help you:\n\n• **Plan your day** from your task list\n• **Add tasks** from natural language\n• **Find what to focus on** right now\n• **Show your progress** summary\n\nWhat would you like to do?`;
+      return `${greeting}! 👋 I'm Nexa AI, your workspace companion. I'm here to catch up, answer questions, or help structure your task lists. What's on your mind?`;
+    }
+
+    if (lower.includes('friend')) {
+      return "I would love to be your friend! ✦ Whether you need help organizing engineering metrics or just want to clear some mental space, I am right here on your workspace layout. Let's make today awesome!";
     }
 
     // ── HELP ──
@@ -361,8 +351,8 @@ RULES:
       return `Here's what I can do for you:\n\n📅 **Plan my day** — organize your tasks by priority\n🎯 **What to focus on** — find your most important task\n📊 **Daily summary** — see your progress stats\n➕ **Add tasks** — just say "Add task: [description]"\n⚠️ **Overdue tasks** — see what needs attention\n\nJust type naturally and I'll help!`;
     }
 
-    // ── DEFAULT ──
-    return `I heard you! Here's a quick overview:\n\n📋 You have **${active.length}** active task${active.length !== 1 ? 's' : ''}\n${overdue.length ? `⚠️ **${overdue.length} overdue** need attention\n` : ''}${todayTasks.length ? `📅 **${todayTasks.length} due today**\n` : ''}\nTry asking me to:\n• "Plan my day"\n• "What should I focus on?"\n• "Add task: [your task]"\n• "Show my summary"`;
+    // ── DEFAULT FALLBACK (Conversational-friendly alternative) ──
+    return `I'm tuned in! If you are asking for database analytics or a remote request, my live link encountered a temporary network delay, but I can still read your workspace state. Try asking me to "Plan my day" or tell me what you'd like to work on!`;
   }
 
   // ── TASK CONTEXT ──────────────────────────────────────────
@@ -399,19 +389,16 @@ RULES:
 
     newTasks.reverse().forEach(t => tasks.unshift(t));
 
-    // Persist
     try {
       const user = firebase.auth().currentUser;
       const lsKey = user ? `taskr_${user.uid}_tasks` : 'taskr_guest_tasks';
       localStorage.setItem(lsKey, JSON.stringify(tasks));
     } catch (_) {}
 
-    // Firestore
     if (window.FireSync?.addTask) {
       newTasks.forEach(t => window.FireSync.addTask(t).catch(() => {}));
     }
 
-    // Re-render
     if (typeof window._nexaRender === 'function') window._nexaRender();
 
     if (typeof window.showToast === 'function') {
@@ -420,7 +407,6 @@ RULES:
   }
 
   // ── TAB VISIBILITY ────────────────────────────────────────
-  // Show the AI FAB only when the Tasks tab is active
   function _syncVisibility() {
     const btn   = document.getElementById('nexa-ai-btn');
     const panel = document.getElementById('nexa-ai-panel');
@@ -428,17 +414,14 @@ RULES:
     const tasksPanel = document.getElementById('tab-tasks');
     const onTasksTab = tasksPanel && tasksPanel.classList.contains('active');
     btn.style.display = onTasksTab ? '' : 'none';
-    // Auto-close panel if we leave the tasks tab
     if (!onTasksTab && _open) _close();
   }
 
   function _watchTabs() {
-    // Listen for nav-item clicks (switchTab fires these)
     document.querySelectorAll('.nav-item').forEach(btn => {
       btn.addEventListener('click', () => setTimeout(_syncVisibility, 50));
       btn.addEventListener('touchend', () => setTimeout(_syncVisibility, 50));
     });
-    // Also observe class changes on tab panels for programmatic switches
     document.querySelectorAll('.tab-panel').forEach(panel => {
       new MutationObserver(_syncVisibility).observe(panel, {
         attributes: true, attributeFilter: ['class']

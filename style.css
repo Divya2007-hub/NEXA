@@ -3109,3 +3109,373 @@ body.guest-mode .toast-container { bottom: 130px; }
     font-size: .74rem !important;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   META PILL — Input bar bottom row controls
+   Makes Repeat / Due Date / Time always visible on all devices
+══════════════════════════════════════════════════════════════ */
+
+/* Base pill style — desktop + mobile */
+.meta-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--sf2);
+  border: 1px solid var(--bd2);
+  border-radius: 100px;
+  padding: 4px 10px 4px 8px;
+  cursor: pointer;
+  transition: border-color var(--tr), background var(--tr);
+  min-height: 30px;
+  flex-shrink: 0;
+}
+.meta-pill:hover,
+.meta-pill:focus-within {
+  border-color: var(--ac);
+  background: var(--sf3);
+}
+
+.meta-pill-icon {
+  font-size: .75rem;
+  line-height: 1;
+  flex-shrink: 0;
+  opacity: .7;
+}
+
+.meta-pill-label {
+  font-size: .65rem;
+  font-weight: 600;
+  color: var(--tx2);
+  white-space: nowrap;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+/* The actual native input/select inside the pill */
+.meta-pill-select,
+.meta-pill-input {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  padding: 0 !important;
+  font-family: var(--fd);
+  font-size: .72rem;
+  font-weight: 500;
+  color: var(--tx) !important;
+  cursor: pointer;
+  min-width: 0;
+  max-width: 110px;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Show placeholder value text when nothing selected */
+.meta-pill-select option { 
+  background: #1c1f2a; 
+  color: #f0f1f5; 
+}
+[data-theme="light"] .meta-pill-select option { 
+  background: #ffffff; 
+  color: #0d0f16; 
+}
+[data-theme="light"] .meta-pill-label { color: var(--tx2); }
+[data-theme="light"] .meta-pill-input,
+[data-theme="light"] .meta-pill-select { color: var(--tx) !important; }
+[data-theme="light"] .meta-pill { background: var(--sf2); border-color: var(--bd2); }
+
+/* Date input: show placeholder on mobile */
+.meta-pill-input[type="date"]:not(:valid),
+.meta-pill-input[type="time"]:not(:valid) {
+  color: var(--tx3) !important;
+}
+
+/* color-scheme so native date/time pickers match dark/light */
+.meta-pill-input[type="date"],
+.meta-pill-input[type="time"] {
+  color-scheme: dark;
+  min-width: 90px;
+}
+[data-theme="light"] .meta-pill-input[type="date"],
+[data-theme="light"] .meta-pill-input[type="time"] {
+  color-scheme: light;
+}
+
+/* input-meta-right: scrollable row of pills */
+.input-meta-right {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+.input-meta-right::-webkit-scrollbar { display: none; }
+
+/* ── Mobile overrides ── */
+@media (max-width: 768px) {
+  /* Input bar solid background — no blur on mobile */
+  .input-bar {
+    background: #0d0f14 !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-top: 1px solid rgba(255,255,255,.1) !important;
+    padding: 10px 12px max(14px, env(safe-area-inset-bottom, 14px)) !important;
+  }
+
+  [data-theme="light"] .input-bar {
+    background: #f4f5f8 !important;
+  }
+
+  /* Stack: priority row on top, pills row below */
+  .input-meta {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    margin-top: 8px !important;
+  }
+
+  /* Priority chips: horizontal scroll */
+  .priority-chips {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    gap: 6px !important;
+    scrollbar-width: none !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  .priority-chips::-webkit-scrollbar { display: none !important; }
+  .p-chip {
+    flex-shrink: 0 !important;
+    font-size: .74rem !important;
+    padding: 6px 14px !important;
+    min-height: 32px !important;
+  }
+
+  /* Pills row: horizontal scroll */
+  .input-meta-right {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    gap: 6px !important;
+    width: 100% !important;
+  }
+
+  /* Each pill: big enough to tap */
+  .meta-pill {
+    padding: 6px 12px 6px 10px !important;
+    min-height: 34px !important;
+    border-radius: 100px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .meta-pill-icon { font-size: .8rem !important; }
+  .meta-pill-label { font-size: .68rem !important; }
+
+  .meta-pill-select,
+  .meta-pill-input {
+    font-size: .75rem !important;
+    max-width: 90px !important;
+  }
+
+  .meta-pill-input[type="date"],
+  .meta-pill-input[type="time"] {
+    min-width: 80px !important;
+  }
+
+  /* Task input + add button */
+  .input-row { gap: 8px !important; }
+  .task-input { height: 46px !important; font-size: .88rem !important; }
+  .add-btn { width: 46px !important; height: 46px !important; flex-shrink: 0 !important; }
+
+  /* Task actions always visible on mobile */
+  .task-actions {
+    opacity: 1 !important;
+  }
+  .task-item:not(:hover) .task-actions {
+    opacity: 1 !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════
+   INPUT BAR PILLS — Repeat / Date / Time
+   Always visible, clearly labelled on all devices
+══════════════════════════════════════════════════ */
+.input-meta-right {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.input-meta-right::-webkit-scrollbar { display: none; }
+
+.ib-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--sf2);
+  border: 1px solid var(--bd2);
+  border-radius: 100px;
+  padding: 5px 12px 5px 10px;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: border-color .18s, background .18s;
+  min-height: 32px;
+}
+.ib-pill:hover,
+.ib-pill:focus-within {
+  border-color: var(--ac);
+  background: var(--sf3);
+}
+
+.ib-pill-icon {
+  font-size: .78rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.ib-pill-label {
+  font-size: .68rem;
+  font-weight: 600;
+  color: var(--tx2);
+  white-space: nowrap;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+.ib-pill-select,
+.ib-pill-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: var(--fd);
+  font-size: .74rem;
+  font-weight: 500;
+  color: var(--tx);
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  padding: 0;
+  min-width: 0;
+}
+
+/* Date / time inputs: show placeholder color when empty */
+.ib-pill-input:not([value]),
+.ib-pill-input[value=""] {
+  color: var(--tx3);
+}
+
+/* Native date/time picker dark mode */
+.ib-pill-input[type="date"],
+.ib-pill-input[type="time"] {
+  color-scheme: dark;
+  min-width: 100px;
+  color: var(--tx2);
+}
+
+/* Select dropdown */
+.ib-pill-select {
+  min-width: 70px;
+  color: var(--tx2);
+}
+.ib-pill-select option {
+  background: #1c1f2a;
+  color: #f0f1f5;
+}
+
+/* Light theme */
+[data-theme="light"] .ib-pill {
+  background: #f0f2f7;
+  border-color: rgba(0,0,0,.1);
+}
+[data-theme="light"] .ib-pill:hover,
+[data-theme="light"] .ib-pill:focus-within {
+  background: #e8eaf0;
+  border-color: var(--ac);
+}
+[data-theme="light"] .ib-pill-input,
+[data-theme="light"] .ib-pill-select {
+  color: #0d0f16;
+}
+[data-theme="light"] .ib-pill-input[type="date"],
+[data-theme="light"] .ib-pill-input[type="time"] {
+  color-scheme: light;
+}
+[data-theme="light"] .ib-pill-select option {
+  background: #ffffff;
+  color: #0d0f16;
+}
+
+/* ── Mobile ── */
+@media (max-width: 768px) {
+  .input-bar {
+    background: #0d0f14 !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-top: 1px solid rgba(255,255,255,.1) !important;
+    padding: 10px 12px max(14px, env(safe-area-inset-bottom, 14px)) !important;
+  }
+  [data-theme="light"] .input-bar {
+    background: #f4f5f8 !important;
+  }
+
+  .input-meta {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    margin-top: 8px !important;
+  }
+
+  .priority-chips {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    scrollbar-width: none !important;
+    gap: 6px !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  .priority-chips::-webkit-scrollbar { display: none !important; }
+
+  .p-chip {
+    flex-shrink: 0 !important;
+    font-size: .74rem !important;
+    padding: 6px 14px !important;
+    min-height: 32px !important;
+  }
+
+  .ib-pill {
+    padding: 6px 12px 6px 10px !important;
+    min-height: 36px !important;
+    gap: 5px !important;
+  }
+
+  .ib-pill-icon   { font-size: .82rem !important; }
+  .ib-pill-label  { font-size: .7rem !important; }
+
+  .ib-pill-input[type="date"],
+  .ib-pill-input[type="time"] {
+    min-width: 90px !important;
+    font-size: .74rem !important;
+  }
+
+  .ib-pill-select {
+    min-width: 65px !important;
+    font-size: .74rem !important;
+  }
+
+  /* Task actions always visible on mobile */
+  .task-actions { opacity: 1 !important; }
+
+  .task-input  { height: 46px !important; font-size: .88rem !important; }
+  .add-btn     { width: 46px !important; height: 46px !important; flex-shrink: 0 !important; }
+}

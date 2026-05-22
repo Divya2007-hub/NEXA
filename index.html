@@ -885,19 +885,32 @@
       <button class="p-chip chip-urgent" data-p="urgent">⚡ Urgent</button>
     </div>
     <div class="input-meta-right">
-      <div class="recur-wrap">
-        <label for="recur-select" class="date-label">Repeat</label>
-        <select id="recur-select" class="recur-select">
-          <option value="">None</option>
+
+      <!-- Repeat -->
+      <div class="ib-pill">
+        <span class="ib-pill-icon">↻</span>
+        <select id="recur-select" class="ib-pill-select" aria-label="Repeat">
+          <option value="">No repeat</option>
           <option value="daily">Daily</option>
           <option value="weekly">Weekly</option>
           <option value="monthly">Monthly</option>
         </select>
       </div>
-      <div class="date-wrap">
-        <label for="due-date" class="date-label">Due</label>
-        <input type="date" id="due-date" class="date-input"/>
+
+      <!-- Due Date -->
+      <div class="ib-pill">
+        <span class="ib-pill-icon">📅</span>
+        <span class="ib-pill-label">Date</span>
+        <input type="date" id="due-date" class="ib-pill-input" aria-label="Due date"/>
       </div>
+
+      <!-- Due Time -->
+      <div class="ib-pill">
+        <span class="ib-pill-icon">⏰</span>
+        <span class="ib-pill-label">Time</span>
+        <input type="time" id="due-time" class="ib-pill-input due-time-input" aria-label="Due time"/>
+      </div>
+
     </div>
   </div>
 </div>
