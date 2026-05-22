@@ -1,5 +1,13 @@
 {
+  "name": "api",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs"
+  },
   "dependencies": {
-    "firebase": "^12.13.0"
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "node-fetch": "^3.3.2"
   }
 }
