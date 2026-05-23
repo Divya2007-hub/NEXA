@@ -3606,3 +3606,49 @@ body.guest-mode .toast-container { bottom: 130px; }
     order: 0;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   MOBILE HAMBURGER CLICK FIX
+   Ensures the topbar and hamburger are always on top and clickable
+══════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .topbar {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 400 !important;
+    pointer-events: all !important;
+  }
+
+  .hamburger {
+    position: relative !important;
+    z-index: 410 !important;
+    pointer-events: all !important;
+    cursor: pointer !important;
+    -webkit-tap-highlight-color: rgba(124,110,247,.2);
+    touch-action: manipulation;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    width: 44px !important;
+    height: 44px !important;
+  }
+
+  /* Make sure nothing sits above the topbar */
+  .bg-grid,
+  .bg-orb,
+  .orb-1,
+  .orb-2 {
+    z-index: 0 !important;
+    pointer-events: none !important;
+  }
+
+  /* app-shell must not clip topbar stacking */
+  .app-shell {
+    z-index: 1 !important;
+  }
+
+  /* main-content must not overlap topbar */
+  .main-content {
+    position: relative;
+    z-index: 2;
+  }
+}
