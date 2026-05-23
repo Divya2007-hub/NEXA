@@ -3517,138 +3517,93 @@ body.guest-mode .toast-container { bottom: 130px; }
   .add-btn     { width: 46px !important; height: 46px !important; flex-shrink: 0 !important; }
 }
 /* ══════════════════════════════════════════════════════════════
-   SIDEBAR FOOTER — Sync indicator inline fix
-   Keeps the Synced pill on the same row as the icon buttons
+   MOBILE COMPLETE FIX — Hamburger, Sidebar, Nav, Sync Pill
 ══════════════════════════════════════════════════════════════ */
-.sidebar-footer {
-  flex-wrap: nowrap !important;
-  align-items: center !important;
-}
 
-/* Pull the autosave/sync indicator out of fixed positioning
-   when it lives inside the sidebar footer */
+/* ── Sidebar footer: sync pill inline on desktop ── */
 .sidebar-footer #autosave-indicator {
   position: static !important;
   transform: none !important;
-  top: auto !important;
-  left: auto !important;
   opacity: 1 !important;
   pointer-events: all !important;
-  order: 0;
   flex: 1;
-  min-width: 0;
+  min-width: 68px;
+  max-width: 120px;
   font-size: .6rem !important;
   padding: 4px 8px !important;
-  min-width: 68px !important;
-  max-width: 110px;
-  justify-content: center;
 }
 
-/* ══════════════════════════════════════════════════════════════
-   MOBILE SYNC INDICATOR FIX
-   Hide autosave pill in topbar on mobile (too cluttered).
-   On desktop it lives inline in the sidebar footer.
-══════════════════════════════════════════════════════════════ */
+/* ── Mobile fixes ── */
 @media (max-width: 768px) {
-  /* Hide the sync indicator on mobile completely — JS also hides it */
-  #autosave-indicator {
-    display: none !important;
-  }
 
-  /* Topbar: make sure it doesn't overflow with extra elements */
-  .topbar-actions {
-    gap: 4px;
-    flex-shrink: 0;
-  }
+  /* Hide sync pill on mobile — no room in topbar */
+  #autosave-indicator { display: none !important; }
 
-  /* Ensure hamburger is always tappable and visible */
-  .hamburger {
-    z-index: 210 !important;
-    position: relative;
-  }
-
-  /* Sidebar nav items: large tap target, always above overlay */
-  .sidebar .nav-item {
-    min-height: 48px;
-    position: relative;
-    z-index: 310;
-    pointer-events: all !important;
-  }
-
-  /* Sidebar itself above overlay */
-  .sidebar {
-    z-index: 300 !important;
-  }
-
-  /* Overlay only covers the content area */
-  .sidebar-overlay.visible {
-    left: 0;
-    z-index: 290;
-  }
-}
-
-/* ── Desktop sidebar footer: sync pill inline ── */
-@media (min-width: 769px) {
-  #autosave-indicator {
-    display: flex !important;
-  }
-
-  .sidebar-footer #autosave-indicator {
-    position: static !important;
-    transform: none !important;
-    opacity: 1 !important;
-    pointer-events: all !important;
-    flex: 1;
-    min-width: 68px;
-    max-width: 120px;
-    font-size: .6rem !important;
-    padding: 4px 8px !important;
-    order: 0;
-  }
-}
-
-/* ══════════════════════════════════════════════════════════════
-   MOBILE HAMBURGER CLICK FIX
-   Ensures the topbar and hamburger are always on top and clickable
-══════════════════════════════════════════════════════════════ */
-@media (max-width: 768px) {
+  /* Topbar: highest z so nothing covers it */
   .topbar {
     position: sticky !important;
     top: 0 !important;
-    z-index: 400 !important;
+    z-index: 9500 !important;
     pointer-events: all !important;
+    display: flex !important;
   }
 
-  .hamburger {
+  /* Hamburger: large tap target, always clickable */
+  #hamburger {
     position: relative !important;
-    z-index: 410 !important;
+    z-index: 9600 !important;
     pointer-events: all !important;
     cursor: pointer !important;
-    -webkit-tap-highlight-color: rgba(124,110,247,.2);
-    touch-action: manipulation;
+    touch-action: manipulation !important;
+    -webkit-tap-highlight-color: rgba(124,110,247,.25) !important;
     min-width: 44px !important;
     min-height: 44px !important;
     width: 44px !important;
     height: 44px !important;
   }
 
-  /* Make sure nothing sits above the topbar */
-  .bg-grid,
-  .bg-orb,
-  .orb-1,
-  .orb-2 {
+  /* Sidebar: slides in over everything */
+  #sidebar {
+    z-index: 9800 !important;
+    pointer-events: all !important;
+  }
+
+  /* Overlay: just below sidebar */
+  #sidebar-overlay {
+    z-index: 9700 !important;
+  }
+
+  /* Background decorations: never block clicks */
+  .bg-grid, .bg-orb, .orb-1, .orb-2 {
     z-index: 0 !important;
     pointer-events: none !important;
   }
 
-  /* app-shell must not clip topbar stacking */
+  /* app-shell: do NOT create a stacking context that traps the topbar */
   .app-shell {
-    z-index: 1 !important;
+    position: relative;
+    z-index: auto !important;
   }
 
-  /* main-content must not overlap topbar */
+  /* main-content: no stacking context on mobile */
   .main-content {
     position: relative;
-    z-index: 2;
+    z-index: auto !important;
+  }
+
+  /* Nav items inside open sidebar: fully tappable */
+  #sidebar .nav-item {
+    pointer-events: all !important;
+    position: relative !important;
+    z-index: 9810 !important;
+    min-height: 48px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(124,110,247,.15);
+  }
+
+  /* Sidebar close button */
+  #sidebar-close {
+    pointer-events: all !important;
+    z-index: 9810 !important;
   }
 }
