@@ -1,14 +1,9 @@
 /**
- * NEXA — Responsive Layout Patch v2.1
- * ─────────────────────────────────────
+ * NEXA — Responsive Layout Patch v3.0
  * Fixes:
- *  1. Sidebar toggle on mobile — works alongside script.js's own handler
- *     by checking/setting the .open class that the CSS listens to
- *  2. Moves #autosave-indicator into the right container per breakpoint
- *  3. Does NOT re-bind hamburger if script.js already handles it;
- *     instead we patch the CSS class approach to match what script.js does
- *
- * Load AFTER script.js, sync.js, sync-patch.js
+ *  1. Sidebar open/close on mobile (hamburger + overlay + close btn)
+ *  2. Nav tab switching from inside the sidebar on mobile
+ *  3. Autosave/sync indicator repositioning per breakpoint
  */
 
 (function () {
@@ -16,105 +11,126 @@
 
   const MOBILE_BP = 768;
 
-  /* ── Badge repositioning ── */
+  /* ════════════════════════════════
+     BADGE REPOSITIONING
+  ════════════════════════════════ */
   function placeBadge() {
-    const badge      = document.getElementById('autosave-indicator');
-    const topbarAct  = document.querySelector('.topbar-actions');
-    const sidebarFoot= document.querySelector('.sidebar-footer');
+    const badge       = document.getElementById('autosave-indicator');
+    const topbarAct   = document.querySelector('.topbar-actions');
+    const sidebarFoot = document.querySelector('.sidebar-footer');
     if (!badge) return;
 
     if (window.innerWidth <= MOBILE_BP) {
-      if (topbarAct && !topbarAct.contains(badge)) {
-        const cmdBtn = document.getElementById('cmd-trigger-mobile');
-        topbarAct.insertBefore(badge, cmdBtn || null);
-      }
+      /* On mobile: hide from topbar — it's too cluttered. Just hide it. */
+      badge.style.display = 'none';
     } else {
+      /* On desktop: put it back in the sidebar footer, inline */
+      badge.style.display = '';
       if (sidebarFoot && !sidebarFoot.contains(badge)) {
         sidebarFoot.insertBefore(badge, sidebarFoot.firstChild);
       }
     }
   }
 
-  /* ── Sidebar: patch the existing script.js toggle to also add .open class ──
-     script.js uses its own sidebar open/close logic. We observe the
-     sidebar-overlay's 'visible' class as a proxy — when it becomes visible
-     the sidebar is open, so we add .open to the sidebar element for CSS.
-     This avoids double-binding the hamburger button.
-  ── */
-  function watchSidebarState() {
+  /* ════════════════════════════════
+     SIDEBAR OPEN / CLOSE
+  ════════════════════════════════ */
+  function openSidebar() {
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('sidebar-overlay');
-    if (!sidebar || !overlay) return;
+    const hamburger = document.getElementById('hamburger');
+    if (sidebar) sidebar.classList.add('open');
+    if (overlay) overlay.classList.add('visible');
+    if (hamburger) hamburger.setAttribute('aria-expanded', 'true');
+  }
 
-    /* ── FIX: define ensureOpen / ensureClose before anything calls them ── */
-    function ensureOpen() {
-      sidebar.classList.add('open');
-      overlay.classList.add('visible');
-    }
-    function ensureClose() {
-      sidebar.classList.remove('open');
-      overlay.classList.remove('visible');
-    }
+  function closeSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    const hamburger = document.getElementById('hamburger');
+    if (sidebar) sidebar.classList.remove('open');
+    if (overlay) overlay.classList.remove('visible');
+    if (hamburger) hamburger.setAttribute('aria-expanded', 'false');
+  }
 
-    // Use MutationObserver to sync .open class with overlay visibility
-    const mo = new MutationObserver(function () {
-      if (overlay.classList.contains('visible')) {
-        sidebar.classList.add('open');
-      } else {
-        sidebar.classList.remove('open');
-      }
-    });
-    mo.observe(overlay, { attributes: true, attributeFilter: ['class'] });
+  function isMobile() {
+    return window.innerWidth <= MOBILE_BP;
+  }
 
-    // Also sync on initial state
-    if (overlay.classList.contains('visible')) {
-      sidebar.classList.add('open');
-    }
+  /* ════════════════════════════════
+     WIRE ALL SIDEBAR TRIGGERS
+  ════════════════════════════════ */
+  function wireSidebar() {
+    const hamburger   = document.getElementById('hamburger');
+    const sidebarClose= document.getElementById('sidebar-close');
+    const overlay     = document.getElementById('sidebar-overlay');
 
-    const hamburger    = document.getElementById('hamburger');
-    const sidebarClose = document.getElementById('sidebar-close');
-
+    /* Hamburger — toggle sidebar */
     if (hamburger) {
-      hamburger.addEventListener('click', function () {
-        // Small delay so script.js fires first, then we sync
-        setTimeout(function () {
-          if (overlay.classList.contains('visible')) {
-            sidebar.classList.add('open');
-          } else {
-            // script.js didn't open overlay — force it ourselves
-            ensureOpen();
-          }
-        }, 10);
+      hamburger.addEventListener('click', function (e) {
+        e.stopPropagation();
+        const sidebar = document.getElementById('sidebar');
+        if (sidebar && sidebar.classList.contains('open')) {
+          closeSidebar();
+        } else {
+          openSidebar();
+        }
       });
     }
 
+    /* Close button inside sidebar */
     if (sidebarClose) {
-      sidebarClose.addEventListener('click', ensureClose);
+      sidebarClose.addEventListener('click', function (e) {
+        e.stopPropagation();
+        closeSidebar();
+      });
     }
 
-    overlay.addEventListener('click', ensureClose);
+    /* Overlay tap — close */
+    if (overlay) {
+      overlay.addEventListener('click', function () {
+        closeSidebar();
+      });
+    }
   }
 
-  /* ── Resize handler ── */
+  /* ════════════════════════════════
+     WIRE NAV ITEMS — close sidebar after tab switch on mobile
+  ════════════════════════════════ */
+  function wireNavItems() {
+    document.querySelectorAll('.nav-item[data-tab]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        if (isMobile()) {
+          /* Small delay so script.js tab switch runs first */
+          setTimeout(closeSidebar, 80);
+        }
+      });
+    });
+  }
+
+  /* ════════════════════════════════
+     RESIZE HANDLER
+  ════════════════════════════════ */
   function onResize() {
     placeBadge();
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('sidebar-overlay');
-    if (window.innerWidth > MOBILE_BP && sidebar && overlay) {
-      sidebar.classList.remove('open');
-      overlay.classList.remove('visible');
+    /* Auto-close sidebar when resizing to desktop */
+    if (!isMobile()) {
+      closeSidebar();
     }
   }
 
-  /* ── Init ── */
+  /* ════════════════════════════════
+     INIT
+  ════════════════════════════════ */
   function init() {
     placeBadge();
-    watchSidebarState();
+    wireSidebar();
+    wireNavItems();
 
-    let t;
+    let resizeTimer;
     window.addEventListener('resize', function () {
-      clearTimeout(t);
-      t = setTimeout(onResize, 120);
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(onResize, 120);
     });
   }
 

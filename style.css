@@ -3543,3 +3543,66 @@ body.guest-mode .toast-container { bottom: 130px; }
   max-width: 110px;
   justify-content: center;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   MOBILE SYNC INDICATOR FIX
+   Hide autosave pill in topbar on mobile (too cluttered).
+   On desktop it lives inline in the sidebar footer.
+══════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  /* Hide the sync indicator on mobile completely — JS also hides it */
+  #autosave-indicator {
+    display: none !important;
+  }
+
+  /* Topbar: make sure it doesn't overflow with extra elements */
+  .topbar-actions {
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  /* Ensure hamburger is always tappable and visible */
+  .hamburger {
+    z-index: 210 !important;
+    position: relative;
+  }
+
+  /* Sidebar nav items: large tap target, always above overlay */
+  .sidebar .nav-item {
+    min-height: 48px;
+    position: relative;
+    z-index: 310;
+    pointer-events: all !important;
+  }
+
+  /* Sidebar itself above overlay */
+  .sidebar {
+    z-index: 300 !important;
+  }
+
+  /* Overlay only covers the content area */
+  .sidebar-overlay.visible {
+    left: 0;
+    z-index: 290;
+  }
+}
+
+/* ── Desktop sidebar footer: sync pill inline ── */
+@media (min-width: 769px) {
+  #autosave-indicator {
+    display: flex !important;
+  }
+
+  .sidebar-footer #autosave-indicator {
+    position: static !important;
+    transform: none !important;
+    opacity: 1 !important;
+    pointer-events: all !important;
+    flex: 1;
+    min-width: 68px;
+    max-width: 120px;
+    font-size: .6rem !important;
+    padding: 4px 8px !important;
+    order: 0;
+  }
+}
