@@ -78,17 +78,24 @@ html, body { width: 100%; height: 100%; overflow: hidden; max-width: 100%; }
   }
 
   .main-content {
-    flex: 1 1 0%;
-    width: 0;
-    min-width: 0;
-    height: 100vh;
+    flex: 1 1 0% !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    height: 100vh !important;
+    min-height: 0 !important;
     overflow-y: scroll !important;
-    overflow-x: hidden;
-    display: flex;
-    flex-direction: column;
+    overflow-x: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
     max-width: none !important;
     margin-left: 0 !important;
     scroll-behavior: smooth;
+    position: relative !important;
+  }
+
+  .tab-panel {
+    flex: 1 0 auto;
+    min-height: 0;
   }
 
   .input-bar { position: fixed; bottom: 0; right: 0; z-index: 100; }

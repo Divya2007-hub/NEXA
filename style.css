@@ -343,7 +343,7 @@ body {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  /* min-height removed: causes scroll to break on desktop (content never overflows scroll container) */
   position: relative;
 }
 
