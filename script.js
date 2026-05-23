@@ -1723,71 +1723,70 @@ function showPwaBanner() {
   console.log('[PWA] Install banner shown');
 }
 
+/* ── PWA standalone detection ───────────────────────────────
+   _pwaInstallPromptFired: set true the instant beforeinstallprompt fires.
+   The browser firing that event is a hard guarantee the app is NOT
+   currently installed as a standalone PWA, so it overrides everything. */
+let _pwaInstallPromptFired = false;
+/* Expose on window so reminders.js can read/set it too */
+Object.defineProperty(window, '_pwaInstallPromptFired', {
+  get: () => _pwaInstallPromptFired,
+  set: (v) => { _pwaInstallPromptFired = v; },
+  configurable: true,
+});
+
+function _pwaIsStandalone() {
+  /* iOS Safari — always reliable */
+  if (window.navigator.standalone === true) return true;
+
+  /* If beforeinstallprompt fired this session, the browser explicitly
+     told us the app is installable = not standalone. Clear stale flag. */
+  if (_pwaInstallPromptFired) {
+    localStorage.removeItem('nexa_pwa_installed');
+    return false;
+  }
+
+  /* display-mode: standalone — only trustworthy when install prompt
+     has NOT fired (Edge/Chrome can match this in a normal browser tab) */
+  const standaloneMode =
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.matchMedia('(display-mode: minimal-ui)').matches;
+
+  if (!standaloneMode) {
+    localStorage.removeItem('nexa_pwa_installed');
+    return false;
+  }
+
+  /* display-mode matches + install prompt never fired = genuinely standalone */
+  return localStorage.getItem('nexa_pwa_installed') === '1';
+}
+
 /* ── Settings card helpers ──────────────────────────────────
    Update the Settings > Install App card based on current state */
 function _updatePwaSettingsCard() {
-  const installSection   = document.getElementById('pwa-install-section');
-  const installedSection = document.getElementById('pwa-installed-section');
-  const settingsBtn      = document.getElementById('pwa-settings-install-btn');
-  const btnLabel         = document.getElementById('pwa-settings-btn-label');
-  const hint             = document.getElementById('pwa-install-hint');
-  if (!installSection) return;   /* card not in DOM yet */
+  const installSection = document.getElementById('pwa-install-section');
+  const settingsBtn    = document.getElementById('pwa-settings-install-btn');
+  const btnLabel       = document.getElementById('pwa-settings-btn-label');
+  const hint           = document.getElementById('pwa-install-hint');
+  if (!installSection) return;
 
-  if (_pwaIsStandalone()) {
-    /* App is installed / running standalone */
-    installSection.classList.add('hidden');
-    if (installedSection) installedSection.classList.remove('hidden');
-    return;
-  }
-
-  /* Not installed — show install section */
+  // Always show install section, never show installed section
   installSection.classList.remove('hidden');
-  if (installedSection) installedSection.classList.add('hidden');
 
   if (deferredPrompt) {
-    /* Install prompt is available */
-    if (settingsBtn) { settingsBtn.disabled = false; }
-    if (btnLabel)    { btnLabel.textContent = 'Install NEXA'; }
-    if (hint)        { hint.textContent = ''; }
+    if (settingsBtn) settingsBtn.disabled = false;
+    if (btnLabel)    btnLabel.textContent = 'Install NEXA';
+    if (hint)        hint.textContent = '';
   } else {
-    /* Prompt not yet available (or already used) */
-    if (settingsBtn) { settingsBtn.disabled = true; }
-    if (btnLabel)    { btnLabel.textContent = 'Install NEXA'; }
+    if (settingsBtn) settingsBtn.disabled = true;
+    if (btnLabel)    btnLabel.textContent = 'Install NEXA';
     if (hint) {
-      /* Friendly hint for browsers that don't fire the event
-         (e.g. iOS Safari uses Add to Home Screen manually)   */
       const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
       hint.textContent = isIos
         ? 'On iOS: tap the Share button then "Add to Home Screen"'
         : 'Use your browser\'s install option (address bar icon) to install.';
     }
   }
-}
-
-/* ── Detect standalone ── */
-function _pwaIsStandalone() {
-  /* Rule 1: iOS Safari sets navigator.standalone directly — always reliable. */
-  if (window.navigator.standalone === true) return true;
-
-  /* Rule 2: display-mode media query — only trustworthy when the browser
-     chrome (address bar, tabs) is genuinely absent.  In a normal browser
-     tab the query can still match on Chromium-based browsers if the site
-     has a manifest, so we guard it with a second signal: the page must
-     have been opened WITHOUT a referrer (standalone launches have none)
-     AND the localStorage flag must be set by a real appinstalled event.
-     Both must be true — either alone can be spoofed or stale. */
-  const standaloneMode =
-    window.matchMedia('(display-mode: standalone)').matches ||
-    window.matchMedia('(display-mode: minimal-ui)').matches;
-
-  if (!standaloneMode) {
-    /* Definitely in a browser tab — clear any stale flag */
-    localStorage.removeItem('nexa_pwa_installed');
-    return false;
-  }
-
-  /* display-mode matches — verify with the localStorage flag */
-  return localStorage.getItem('nexa_pwa_installed') === '1';
 }
 
 const isStandalone = _pwaIsStandalone();
@@ -1802,16 +1801,18 @@ if (isStandalone) {
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
   deferredPrompt = e;
-  console.log('[PWA] beforeinstallprompt captured');
 
-  /* Update settings card immediately so button becomes active */
+  /* Browser firing this = app is definitely NOT installed standalone.
+     Set flag immediately and clear any stale localStorage flag. */
+  _pwaInstallPromptFired = true;
+  localStorage.removeItem('nexa_pwa_installed');
+  console.log('[PWA] beforeinstallprompt captured — clearing installed flag');
+
+  /* Update settings card right away to hide "NEXA is installed!" */
   _updatePwaSettingsCard();
 
-  /* Don't show floating banner if already standalone */
   if (isStandalone) return;
-  /* Don't re-show banner if dismissed this session */
   if (sessionStorage.getItem('nexa_pwa_dismissed')) return;
-
   showPwaBanner();
 });
 
@@ -1886,6 +1887,9 @@ window.matchMedia('(display-mode: standalone)').addEventListener('change', e => 
   }
 });
 
+/* Expose so reminders.js and other modules can trigger a card refresh */
+window._updatePwaSettingsCard = _updatePwaSettingsCard;
+
 /* ── 7. Initial settings card state (run after DOM is ready) ─
    Also re-run whenever the Settings tab is opened, since the
    card may not have been in the DOM on first run.             */
@@ -1900,6 +1904,7 @@ document.addEventListener('click', e => {
   const tab = e.target.closest('[data-tab]');
   if (tab && tab.dataset.tab === 'settings') {
     setTimeout(_updatePwaSettingsCard, 150);
+    setTimeout(_updatePwaSettingsCard, 600);
   }
 });
 
@@ -1927,14 +1932,7 @@ if ('serviceWorker' in navigator) {
           });
         });
       })
-      .catch(err => {
-        console.error('[SW] Registration failed:', err);
-        /* Common causes:
-             • Not on HTTPS / localhost  → deploy to HTTPS
-             • sw.js not found (404)     → check sw.js is in root
-             • sw.js has a syntax error  → open DevTools → Application → SW
-             • Wrong scope               → move sw.js to project root   */
-      });
+      .catch(err => console.error('[SW] Registration failed:', err));
   });
 }
 

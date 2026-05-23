@@ -976,11 +976,20 @@ function _injectSettingsSection() {
     /* Insert before the first card (top of grid) */
     settingsGrid.insertBefore(card, settingsGrid.firstChild);
 
-    // 🟢 ADDED: Handle the immediate initial text/visibility status based on environment
+    // Handle PWA install status display
+    // Use window._pwaInstallPromptFired from script.js if available —
+    // that flag is set the moment beforeinstallprompt fires, which is the
+    // most reliable signal that the app is NOT installed as standalone.
     const installBtn = card.querySelector('#pwa-install-btn');
     const statusLabel = card.querySelector('#pwa-status-label');
-    
-    if (window.matchMedia('(display-mode: standalone)').matches) {
+
+    const _isReallyStandalone = () => {
+      if (window.navigator.standalone === true) return true;
+      if (window._pwaInstallPromptFired) return false;
+      return window.matchMedia('(display-mode: standalone)').matches;
+    };
+
+    if (_isReallyStandalone()) {
       statusLabel.textContent = 'Installed';
       statusLabel.style.color = 'var(--lo)';
       installBtn.style.display = 'none';
@@ -1356,8 +1365,12 @@ window.deferredNexaPrompt = null;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   window.deferredNexaPrompt = e;
-  
-  // Directly update the button if the settings panel is already open
+
+  /* Share the flag with script.js's _pwaIsStandalone() check */
+  window._pwaInstallPromptFired = true;
+  localStorage.removeItem('nexa_pwa_installed');
+
+  // Update the reminders settings panel button if it's open
   const installBtn = document.getElementById('pwa-install-btn');
   const statusLabel = document.getElementById('pwa-status-label');
   if (installBtn && statusLabel) {
@@ -1365,6 +1378,11 @@ window.addEventListener('beforeinstallprompt', (e) => {
     installBtn.style.display = 'inline-flex';
     statusLabel.textContent = 'App can be installed for offline access';
     statusLabel.style.color = 'var(--tx2)';
+  }
+
+  // Also update the main Install App settings card
+  if (typeof window._updatePwaSettingsCard === 'function') {
+    window._updatePwaSettingsCard();
   }
 });
 

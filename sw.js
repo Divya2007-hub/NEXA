@@ -112,16 +112,26 @@ self.addEventListener('fetch', event => {
   }
 
   /* Dynamic assets: network-first with cache fallback */
-  event.respondWith(
-    fetch(request)
-      .then(response => {
-        if (response.ok) {
-          caches.open(CACHE_DYNAMIC).then(c => c.put(request, response.clone()));
-        }
-        return response;
+event.respondWith(
+  fetch(request)
+    .then(response => {
+  // Clone BEFORE doing anything else with it
+  const responseClone = response.clone();
+  if (response.ok) {
+    caches.open(CACHE_DYNAMIC).then(c => c.put(request, responseClone));
+  }
+  return response;
+})
+    .catch(() =>
+      caches.match(request).then(cached => {
+        if (cached) return cached;
+        return new Response(
+          'Network error — resource not cached',
+          { status: 503, statusText: 'Service Unavailable' }
+        );
       })
-      .catch(() => caches.match(request))
-  );
+    )
+);
 });
 
 /* ═══════════════════════════════════════════════════════════════════

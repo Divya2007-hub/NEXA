@@ -46,6 +46,16 @@
     const overlay = document.getElementById('sidebar-overlay');
     if (!sidebar || !overlay) return;
 
+    /* ── FIX: define ensureOpen / ensureClose before anything calls them ── */
+    function ensureOpen() {
+      sidebar.classList.add('open');
+      overlay.classList.add('visible');
+    }
+    function ensureClose() {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('visible');
+    }
+
     // Use MutationObserver to sync .open class with overlay visibility
     const mo = new MutationObserver(function () {
       if (overlay.classList.contains('visible')) {
@@ -60,11 +70,6 @@
     if (overlay.classList.contains('visible')) {
       sidebar.classList.add('open');
     }
-
-    // Ensure hamburger button triggers script.js's handler correctly
-    // script.js likely toggles the overlay and the sidebar's transform via its own class.
-    // We just make sure our CSS (.sidebar.open) tracks overlay.visible.
-
 
     const hamburger    = document.getElementById('hamburger');
     const sidebarClose = document.getElementById('sidebar-close');

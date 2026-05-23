@@ -92,8 +92,8 @@
   async function _onSignIn(uid) {
     _uid   = uid;
     _db    = window.firebase.firestore();
-    // Aligned key layout to prevent cache collisions with core bootApp structures
-    _lsKey = 'nexa_tasks';   
+    // FIX: must match the UID-scoped key that script.js bootApp() uses
+    _lsKey = `taskr_${uid}_tasks`;
 
     if (window.SyncUI && typeof window.SyncUI.set === 'function') {
       window.SyncUI.set(navigator.onLine ? 'syncing' : 'offline');
@@ -208,13 +208,23 @@
     live.splice(0, live.length, ...normalised);
     _lsSync();
 
-    // Trigger explicit core application visual render updates
-    if (typeof window.render === 'function') {
-      window.render();
-    }
-    if (typeof window.renderHeatmap === 'function') {
-      window.renderHeatmap();
-    }
+    // FIX: Use _nexaRender (safe exposed alias) with retries to handle the
+    // first-login race condition where render() isn't ready yet when the
+    // first Firestore snapshot arrives right after bootApp completes.
+    const doRender = () => {
+      if (typeof window._nexaRender === 'function') {
+        window._nexaRender();
+      } else if (typeof window.render === 'function') {
+        window.render();
+      }
+      if (typeof window.renderHeatmap === 'function') {
+        window.renderHeatmap();
+      }
+    };
+
+    doRender();
+    setTimeout(doRender, 200);
+    setTimeout(doRender, 700);
   }
 
   /* ════════════════════════════════════════════════════════════════
