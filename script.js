@@ -1772,7 +1772,7 @@ function _updatePwaSettingsCard() {
 
   installSection.classList.remove('hidden');
 
-  // Always enable the button — either trigger native prompt or show install guide
+ // Always enable the button — either trigger native prompt or show install guide
   if (settingsBtn) {
     settingsBtn.disabled = false;
     settingsBtn.style.opacity = '1';
@@ -1924,13 +1924,7 @@ if (pwaInstall) {
 /* ── 3b. Settings card install button click ─────────────────*/
 document.addEventListener('click', e => {
   if (e.target.closest('#pwa-settings-install-btn')) {
-    if (deferredPrompt) {
-      // Native browser install prompt available
-      _triggerPwaInstall(false);
-    } else {
-      // No native prompt — show step-by-step install guide
-      _showPwaInstallGuide();
-    }
+    _triggerPwaInstall(false);
   }
 });
 
