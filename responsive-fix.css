@@ -59,10 +59,11 @@
 ═══════════════════════════════════════════════════════════ */
 html, body { width: 100%; height: 100%; overflow: hidden; max-width: 100%; }
 
-#app-wrapper { position: fixed; inset: 0; width: 100vw; height: 100vh; overflow: hidden; }
+/* app-wrapper must NOT overflow:hidden — it would clip main-content's scroll */
+#app-wrapper { position: fixed; inset: 0; width: 100vw; height: 100vh; overflow: visible; }
 
-/* FIX: removed overflow:hidden from app-shell so main-content can scroll */
-.app-shell { position: relative; z-index: 1; width: 100%; height: 100vh; display: flex; flex-direction: row; overflow: visible; }
+/* app-shell: flex row, fills full height, no clipping */
+.app-shell { position: relative; z-index: 1; width: 100%; height: 100vh; display: flex; flex-direction: row; overflow: hidden; }
 
 @media (min-width: 769px) {
   .sidebar {
@@ -81,7 +82,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; max-width: 100%; }
     width: 0;
     min-width: 0;
     height: 100vh;
-    overflow-y: scroll !important; /* FIX: scroll instead of auto, with !important */
+    overflow-y: scroll !important;
     overflow-x: hidden;
     display: flex;
     flex-direction: column;
