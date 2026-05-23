@@ -1,8 +1,5 @@
 {
   "outputDirectory": ".",
-  "builds": [
-    { "src": "index.html", "use": "@vercel/static" }
-  ],
   "headers": [
     {
       "source": "/sw.js",
