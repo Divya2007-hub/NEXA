@@ -1,5 +1,8 @@
 {
+  "version": 2,
   "outputDirectory": ".",
+  "installCommand": "echo 'skip'",
+  "buildCommand": "echo 'skip'",
   "headers": [
     {
       "source": "/sw.js",
