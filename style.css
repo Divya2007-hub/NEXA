@@ -3516,3 +3516,30 @@ body.guest-mode .toast-container { bottom: 130px; }
   .task-input  { height: 46px !important; font-size: .88rem !important; }
   .add-btn     { width: 46px !important; height: 46px !important; flex-shrink: 0 !important; }
 }
+/* ══════════════════════════════════════════════════════════════
+   SIDEBAR FOOTER — Sync indicator inline fix
+   Keeps the Synced pill on the same row as the icon buttons
+══════════════════════════════════════════════════════════════ */
+.sidebar-footer {
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+}
+
+/* Pull the autosave/sync indicator out of fixed positioning
+   when it lives inside the sidebar footer */
+.sidebar-footer #autosave-indicator {
+  position: static !important;
+  transform: none !important;
+  top: auto !important;
+  left: auto !important;
+  opacity: 1 !important;
+  pointer-events: all !important;
+  order: 0;
+  flex: 1;
+  min-width: 0;
+  font-size: .6rem !important;
+  padding: 4px 8px !important;
+  min-width: 68px !important;
+  max-width: 110px;
+  justify-content: center;
+}
