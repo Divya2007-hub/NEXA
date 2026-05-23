@@ -57,10 +57,22 @@
 /* ═══════════════════════════════════════════════════════════
    PART 2 — TRUE FULLSCREEN DESKTOP
 ═══════════════════════════════════════════════════════════ */
+html, body { 
+  width: 100%; 
+  height: 100%; 
+  overflow-x: hidden;  /* only hide horizontal */
+  overflow-y: auto;    /* allow vertical scroll */
+  max-width: 100%; 
+}
 
-html, body { width: 100%; height: 100%; overflow: hidden; max-width: 100%; }
 
-#app-wrapper { position: fixed; inset: 0; width: 100vw; height: 100vh; overflow: hidden; }
+#app-wrapper { 
+  position: fixed; 
+  inset: 0; 
+  width: 100vw; 
+  height: 100vh; 
+  overflow: hidden;  /* keep this */
+}
 
 .app-shell { position: relative; z-index: 1; width: 100%; height: 100vh; display: flex; flex-direction: row; overflow: hidden; }
 
@@ -91,9 +103,9 @@ html, body { width: 100%; height: 100%; overflow: hidden; max-width: 100%; }
   .input-bar { position: fixed; bottom: 0; right: 0; z-index: 100; }
 }
 
-.tab-panel { padding: 24px 32px 110px; width: 100%; box-sizing: border-box; max-width: none !important; }
-@media (min-width: 1024px) { .tab-panel { padding: 28px 40px 110px; } }
-@media (min-width: 1440px) { .main-content { max-width: none !important; } .tab-panel { padding: 32px 48px 110px; } }
+.tab-panel { padding: 24px 32px 180px; width: 100%; box-sizing: border-box; max-width: none !important; }
+@media (min-width: 1024px) { .tab-panel { padding: 28px 40px 180px; } }
+@media (min-width: 1440px) { .main-content { max-width: none !important; } .tab-panel { padding: 32px 48px 180px; } }
 .input-row, .input-meta { max-width: none; }
 
 
