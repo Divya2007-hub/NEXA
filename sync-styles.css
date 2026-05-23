@@ -290,11 +290,8 @@
 
 /* ── Large screens (1440px+) ── */
 @media (min-width: 1440px) {
-  .main-content {
-    max-width: 960px;
-  }
   .settings-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
