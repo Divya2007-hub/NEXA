@@ -1770,95 +1770,24 @@ function _updatePwaSettingsCard() {
   const hint           = document.getElementById('pwa-install-hint');
   if (!installSection) return;
 
+  // Always show install section, never show installed section
   installSection.classList.remove('hidden');
 
- // Always enable the button — either trigger native prompt or show install guide
-  if (settingsBtn) {
-    settingsBtn.disabled = false;
-    settingsBtn.style.opacity = '1';
-    settingsBtn.style.cursor = 'pointer';
-    // Remove the disabled styling override
-    settingsBtn.style.background = '';
-    settingsBtn.style.borderColor = '';
-    settingsBtn.style.color = '';
-  }
-  if (btnLabel) btnLabel.textContent = 'Install NEXA';
-
   if (deferredPrompt) {
-    if (hint) hint.textContent = '';
+    if (settingsBtn) settingsBtn.disabled = false;
+    if (btnLabel)    btnLabel.textContent = 'Install NEXA';
+    if (hint)        hint.textContent = '';
   } else {
+    if (settingsBtn) settingsBtn.disabled = true;
+    if (btnLabel)    btnLabel.textContent = 'Install NEXA';
     if (hint) {
       const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
-      const isEdge = /edg/i.test(navigator.userAgent);
-      const isFirefox = /firefox/i.test(navigator.userAgent);
-      if (isIos) {
-        hint.innerHTML = '📱 Tap <strong>Share ↑</strong> then <strong>Add to Home Screen</strong>';
-      } else if (isEdge) {
-        hint.innerHTML = '🖥️ Click <strong>⋯ menu</strong> → Apps → Install this site as an app';
-      } else if (isFirefox) {
-        hint.innerHTML = '🦊 Use Chrome or Edge for one-click install';
-      } else {
-        hint.innerHTML = '🖥️ Click the <strong>⊕ install icon</strong> in your address bar';
-      }
+      hint.textContent = isIos
+        ? 'On iOS: tap the Share button then "Add to Home Screen"'
+        : 'Use your browser\'s install option (address bar icon) to install.';
     }
   }
 }
-
-/* ── PWA Install Guide Modal ── */
-function _showPwaInstallGuide() {
-  const existing = document.getElementById('nexa-pwa-guide');
-  if (existing) { existing.remove(); return; }
-
-  const isIos     = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
-  const isEdge    = /edg/i.test(navigator.userAgent);
-  const isFirefox = /firefox/i.test(navigator.userAgent);
-
-  let steps = '';
-  if (isIos) {
-    steps = `
-      <div class="pwa-guide-step"><span class="pwa-guide-num">1</span><span>Tap the <strong>Share ↑</strong> button at the bottom of Safari</span></div>
-      <div class="pwa-guide-step"><span class="pwa-guide-num">2</span><span>Scroll and tap <strong>Add to Home Screen</strong></span></div>
-      <div class="pwa-guide-step"><span class="pwa-guide-num">3</span><span>Tap <strong>Add</strong> in the top right</span></div>`;
-  } else if (isEdge) {
-    steps = `
-      <div class="pwa-guide-step"><span class="pwa-guide-num">1</span><span>Click <strong>⋯ menu</strong> in the top right</span></div>
-      <div class="pwa-guide-step"><span class="pwa-guide-num">2</span><span>Go to <strong>Apps</strong> → <strong>Install this site as an app</strong></span></div>
-      <div class="pwa-guide-step"><span class="pwa-guide-num">3</span><span>Click <strong>Install</strong></span></div>`;
-  } else if (isFirefox) {
-    steps = `
-      <div class="pwa-guide-step"><span class="pwa-guide-num">ℹ</span><span>Firefox doesn't support PWA install. Open NEXA in <strong>Chrome</strong> or <strong>Edge</strong> to install it.</span></div>`;
-  } else {
-    steps = `
-      <div class="pwa-guide-step"><span class="pwa-guide-num">1</span><span>Look for the <strong>⊕ install icon</strong> in the address bar (right side)</span></div>
-      <div class="pwa-guide-step"><span class="pwa-guide-num">2</span><span>Click it and select <strong>Install</strong></span></div>
-      <div class="pwa-guide-step"><span class="pwa-guide-num">3</span><span>Or: browser <strong>⋯ menu</strong> → <em>Install NEXA / Cast, save, and share</em></span></div>`;
-  }
-
-  const modal = document.createElement('div');
-  modal.id = 'nexa-pwa-guide';
-  modal.style.cssText = 'position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px;animation:overlay-in .18s ease both;';
-  modal.innerHTML = `
-    <div style="background:var(--sf);border:1px solid var(--bd2);border-radius:20px;padding:28px 24px;max-width:400px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.5);animation:cmd-in .24s cubic-bezier(.34,1.56,.64,1) both;position:relative;">
-      <button onclick="document.getElementById('nexa-pwa-guide').remove()" style="position:absolute;top:14px;right:14px;width:28px;height:28px;border-radius:7px;border:1px solid var(--bd2);background:transparent;color:var(--tx3);cursor:pointer;font-size:.75rem;display:flex;align-items:center;justify-content:center;">✕</button>
-      <div style="font-size:1.8rem;margin-bottom:12px;">📲</div>
-      <h3 style="font-weight:700;font-size:1rem;color:var(--tx);margin-bottom:6px;letter-spacing:-.02em;">Install NEXA</h3>
-      <p style="font-size:.76rem;color:var(--tx2);margin-bottom:18px;line-height:1.55;">Follow these steps to install NEXA on your device:</p>
-      <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px;">${steps}</div>
-      <button onclick="document.getElementById('nexa-pwa-guide').remove()" style="width:100%;padding:11px;border-radius:var(--r);background:var(--ac);border:none;color:#fff;font-family:var(--fd);font-size:.82rem;font-weight:600;cursor:pointer;">Got it!</button>
-    </div>`;
-
-  document.body.appendChild(modal);
-  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
-
-  /* Inject step styles once */
-  if (!document.getElementById('pwa-guide-styles')) {
-    const s = document.createElement('style');
-    s.id = 'pwa-guide-styles';
-    s.textContent = '.pwa-guide-step{display:flex;align-items:flex-start;gap:12px;font-size:.8rem;color:var(--tx2);line-height:1.5;} .pwa-guide-num{min-width:24px;height:24px;border-radius:50%;background:var(--ac-g);color:var(--ac);font-weight:700;font-size:.7rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1px solid rgba(var(--ac-rgb),.2);}';
-    document.head.appendChild(s);
-  }
-}
-
 
 const isStandalone = _pwaIsStandalone();
 
