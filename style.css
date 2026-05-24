@@ -3681,7 +3681,7 @@ body.guest-mode .toast-container { bottom: 130px; }
   }
   .task-input {
     flex: 1 !important;
-    min-width: 480px;
+    min-width: 0;
     height: 44px !important;
     font-size: .85rem !important;
   }
@@ -3828,7 +3828,7 @@ body.guest-mode .toast-container { bottom: 130px; }
   }
   .pomodoro-card {
     width: 100% !important;
-    min-width: 480px;
+    min-width: 0;
   }
   .pomo-ring-wrap { width: 180px !important; height: 180px !important; }
   .pomo-ring { width: 180px !important; height: 180px !important; }
