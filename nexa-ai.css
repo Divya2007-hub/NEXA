@@ -3,7 +3,7 @@
 /* ── FAB Button ── */
 #nexa-ai-btn {
   position: fixed;
-  bottom: 110px;
+  bottom: 160px;
   right: 20px;
   width: 48px;
   height: 48px;
@@ -305,7 +305,7 @@
 /* ── Mobile ── */
 @media (max-width: 768px) {
   #nexa-ai-btn {
-    bottom: 120px;
+    bottom: 170px;
     right: 12px;
     width: 46px;
     height: 46px;
@@ -328,7 +328,7 @@
 
 /* ── Tablet ── */
 @media (min-width: 769px) and (max-width: 1023px) {
-  #nexa-ai-btn  { bottom: 95px; right: 18px; }
+  #nexa-ai-btn  { bottom: 145px; right: 18px; }
   #nexa-ai-panel {
     bottom: 150px;
     right: 18px;
