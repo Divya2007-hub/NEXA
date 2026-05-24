@@ -705,11 +705,13 @@ const openSidebar = () => {
   sidebar.classList.add('open');
   sidebarOverlay.classList.add('visible');
   hamburger.setAttribute('aria-expanded', 'true');
+  document.body.classList.add('sidebar-open');
 };
 const closeSidebar = () => {
   sidebar.classList.remove('open');
   sidebarOverlay.classList.remove('visible');
   hamburger.setAttribute('aria-expanded', 'false');
+  document.body.classList.remove('sidebar-open');
 };
 
 hamburger.addEventListener('click', () => {
