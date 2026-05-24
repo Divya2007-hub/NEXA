@@ -241,14 +241,17 @@
      BRAND
   ────────────────────────────────────────────────────────── */
   #sidebar .brand-name {
-    color: #030303 !important;
+    color: #ffffff !important;
+  }
+  [data-theme="light"] #sidebar .brand-name {
+    color: #1a1a2e !important;
   }
 
   #sidebar .brand-sub {
     color: #5e6a7c !important;
   }
 
-  /* ──────────────────────────────────────────────────────────
+  /* ─────────────────────────────────────────────────────────
      CLOSE BUTTON
   ────────────────────────────────────────────────────────── */
   #sidebar .sidebar-close {
@@ -276,7 +279,8 @@
   /* ──────────────────────────────────────────────────────────
      USER CHIP
   ────────────────────────────────────────────────────────── */
-  #sidebar .suc-name  { color: #080808 !important; }
+  #sidebar .suc-name { color: #ffffff !important; }
+  [data-theme="light"] #sidebar .suc-name { color: #1a1a2e !important; }
   #sidebar .suc-email { color: #475365 !important; }
 
   #sidebar .sidebar-user-chip {
