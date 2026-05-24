@@ -20,14 +20,21 @@
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 
     /* CRITICAL: solid opaque background — no backdrop-filter, no isolation */
-    background: var(--bg, #0d0f16) !important;
+    background: linear-gradient(
+  180deg,
+  rgba(5, 7, 13, 0.98),
+  rgba(8, 10, 18, 0.99) 
+    )!important;
     isolation: auto !important;          /* removes the stacking-context that hides content */
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
 
-    border-right: 1px solid rgba(124, 110, 247, 0.2) !important;
-    box-shadow: none !important;
-    z-index: 900 !important;             /* above overlay (800) and topbar (600) */
+    border-right: 1px solid rgba(124, 110, 247, 0.18) !important;
+
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,0.03),
+      8px 0 40px rgba(0,0,0,0.85),
+      0 0 30px rgba(124,110,247,0.12) !important;             /* above overlay (800) and topbar (600) */
 
     display: flex !important;
     flex-direction: column !important;
@@ -51,7 +58,7 @@
     position: fixed !important;
     inset: 0 !important;
     z-index: 800 !important;            /* below sidebar (900) */
-    background: rgba(0, 0, 0, 0.6) !important;
+    background: rgba(0, 0, 0, 0.55) !important;
     /* NO backdrop-filter — it blurs the sidebar content on iOS */
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
