@@ -336,12 +336,12 @@
     height: 480px;
   }
 }
-/* ── Guest mode lock: show button but visually locked ── */
+/* ── Guest mode lock: show button but visually locked, no position change ── */
 #nexa-ai-btn.ai-btn-locked {
   opacity: 0.55;
   cursor: not-allowed !important;
   filter: grayscale(0.3);
-  position: relative;
+  /* position stays fixed — do NOT override */
 }
 #nexa-ai-btn.ai-btn-locked::after {
   content: '🔒';
