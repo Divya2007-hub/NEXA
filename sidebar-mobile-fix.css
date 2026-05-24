@@ -1,233 +1,322 @@
 /* ══════════════════════════════════════════════════════════════
-   NEXA — Mobile Sidebar Fix  |  sidebar-mobile-fix.css  v5.0
-   Load LAST — overrides everything else
+   NEXA — Mobile Sidebar Fix  |  sidebar-mobile-fix.css
+   Fixes:
+   ✅ Invisible sidebar content
+   ✅ Non-working nav item clicks
+   ✅ Mobile touch issues
+   ✅ Overlay blocking taps
+   ✅ Works in DARK + LIGHT mode
+   Load LAST, after all other CSS files
 ══════════════════════════════════════════════════════════════ */
 
 @media (max-width: 768px) {
 
-  /* ── Z-INDEX MASTER STACK (one place, no conflicts) ──────────
-     auth-loader   99999
-     cmd-overlay    9000
-     toast          8000
-     reminder pop   9000
-     auth-gate      9000
-     nexa-ai panel  1100
-     nexa-ai btn    1200
-     SIDEBAR         950  ← nav lives here, must be highest layout element
-     OVERLAY         900  ← MUST be below sidebar
-     topbar          600
-     input-bar       400
-     guest-banner    450
-  ──────────────────────────────────────────────────────────── */
-
-  /* ── SIDEBAR ── */
+  /* ──────────────────────────────────────────────────────────
+     SIDEBAR PANEL
+  ────────────────────────────────────────────────────────── */
   #sidebar {
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
     bottom: 0 !important;
+
     height: 100dvh !important;
     width: min(80vw, 280px) !important;
-    max-width: 280px !important;
 
     transform: translateX(-100%) !important;
-    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 
-    z-index: 950 !important;   /* <── highest layout z-index */
+    background: var(--bg, #0d0f16) !important;
 
-    background: #0d0f16 !important;
     isolation: auto !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
 
     border-right: 1px solid rgba(124, 110, 247, 0.2) !important;
-    box-shadow: none !important;
+
+    z-index: 900 !important;
 
     display: flex !important;
     flex-direction: column !important;
+
     overflow-y: auto !important;
     overflow-x: hidden !important;
+
     scrollbar-width: none !important;
 
-    /* CRITICAL: content must be visible and clickable */
     opacity: 1 !important;
     visibility: visible !important;
-    pointer-events: all !important;
+
+    /* CLICK FIX */
+    pointer-events: auto !important;
   }
-  #sidebar::-webkit-scrollbar { display: none !important; }
+
+  #sidebar::-webkit-scrollbar {
+    display: none !important;
+  }
 
   #sidebar.open {
     transform: translateX(0) !important;
     box-shadow: 4px 0 32px rgba(0, 0, 0, 0.7) !important;
+
+    /* CLICK FIX */
+    pointer-events: auto !important;
   }
 
-  /* ── OVERLAY — MUST be below sidebar ── */
+  /* ──────────────────────────────────────────────────────────
+     OVERLAY
+  ────────────────────────────────────────────────────────── */
   #sidebar-overlay {
     position: fixed !important;
     inset: 0 !important;
-    z-index: 900 !important;   /* <── BELOW sidebar (950) */
-    background: rgba(0, 0, 0, 0.55) !important;
+
+    z-index: 800 !important;
+
+    background: rgba(0, 0, 0, 0.06) !important;
+
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
+
     display: none !important;
+
     cursor: pointer !important;
+
+    /* IMPORTANT */
+    pointer-events: auto !important;
   }
+
   #sidebar-overlay.visible {
     display: block !important;
   }
 
-  /* ── ALL SIDEBAR CONTENT: force visible ── */
-  #sidebar,
+  /* ──────────────────────────────────────────────────────────
+     FORCE ALL SIDEBAR CONTENT VISIBLE
+  ────────────────────────────────────────────────────────── */
   #sidebar *,
   #sidebar .nav-item,
   #sidebar .nav-label,
   #sidebar .nav-icon,
-  #sidebar .sidebar-nav,
+  #sidebar .ss-value,
+  #sidebar .ss-label,
+  #sidebar .brand-name,
+  #sidebar .brand-sub,
+  #sidebar .suc-name,
+  #sidebar .suc-email,
   #sidebar .sidebar-stats,
-  #sidebar .sidebar-header,
   #sidebar .sidebar-footer,
   #sidebar .sidebar-user-chip,
   #sidebar .sidebar-guest-chip {
     visibility: visible !important;
     opacity: 1 !important;
+
+    /* CLICK FIX */
+    pointer-events: auto !important;
   }
 
-  /* ── NAV ITEMS: must be fully clickable ── */
+  /* ──────────────────────────────────────────────────────────
+     NAV ITEMS — FIXED CLICKABLE
+  ────────────────────────────────────────────────────────── */
   #sidebar .nav-item {
-    position: relative !important;
-    z-index: 1 !important;
-    pointer-events: all !important;
-    touch-action: manipulation !important;
+    color: #c8cdd6 !important;
+    background: transparent !important;
+
+    /* MAIN FIX */
+    pointer-events: auto !important;
+    touch-action: auto !important;
+    user-select: none !important;
+
     -webkit-tap-highlight-color: rgba(124, 110, 247, 0.2) !important;
+
     cursor: pointer !important;
+
     min-height: 48px !important;
     padding: 10px 12px !important;
+
     display: flex !important;
     align-items: center !important;
     gap: 10px !important;
+
     border-radius: 8px !important;
+
     font-size: 0.85rem !important;
     font-weight: 500 !important;
-    color: #c8cdd6 !important;
-    background: transparent !important;
-    border: none !important;
-    width: 100% !important;
-    text-align: left !important;
+
+    transition: background 0.15s, color 0.15s !important;
+
+    position: relative !important;
+
+    /* VERY IMPORTANT */
+    z-index: 9999 !important;
   }
+
   #sidebar .nav-item.active {
     background: rgba(124, 110, 247, 0.15) !important;
     color: #9b8fff !important;
   }
-  #sidebar .nav-item:active {
+
+  #sidebar .nav-item:active,
+  #sidebar .nav-item:focus {
     background: rgba(124, 110, 247, 0.12) !important;
+    color: #c0b8ff !important;
   }
+
+  /* ──────────────────────────────────────────────────────────
+     NAV ICON
+  ────────────────────────────────────────────────────────── */
   #sidebar .nav-icon {
     color: inherit !important;
     opacity: 1 !important;
+
     font-size: 0.95rem !important;
+
     flex-shrink: 0 !important;
     width: 22px !important;
+
     text-align: center !important;
   }
+
   #sidebar .nav-label {
     color: inherit !important;
     flex: 1 !important;
   }
 
-  /* ── SIDEBAR NAV CONTAINER ── */
-  #sidebar .sidebar-nav {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 2px !important;
-    padding: 0 8px !important;
-    flex: 1 !important;
-    position: relative !important;
-    z-index: 1 !important;
-    pointer-events: all !important;
-  }
-
-  /* ── TOPBAR ── */
-  .topbar {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    z-index: 600 !important;
-    background: #0d0f14 !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
-  }
-  [data-theme="light"] .topbar {
-    background: #f4f5f8 !important;
-  }
-
-  /* ── HAMBURGER ── */
-  #hamburger {
-    pointer-events: all !important;
-    touch-action: manipulation !important;
-    cursor: pointer !important;
-    z-index: 610 !important;
-    position: relative !important;
-  }
-  .hamburger span {
-    background: #c0c8d8 !important;
-  }
-  [data-theme="light"] .hamburger span {
-    background: #4b5563 !important;
-  }
-
-  /* ── SIDEBAR CLOSE BUTTON ── */
-  #sidebar .sidebar-close {
-    display: flex !important;
-    pointer-events: all !important;
-    cursor: pointer !important;
-    color: #c0b8ff !important;
-    min-width: 36px !important;
-    min-height: 36px !important;
-  }
-
-  /* ── STATS STRIP ── */
+  /* ──────────────────────────────────────────────────────────
+     STATS STRIP
+  ────────────────────────────────────────────────────────── */
   #sidebar .sidebar-stats {
     background: rgba(255, 255, 255, 0.05) !important;
+
     border: 1px solid rgba(255, 255, 255, 0.08) !important;
+
     margin: 0 12px 12px !important;
+
     border-radius: 10px !important;
   }
-  #sidebar .ss-value { color: #f0f1f5 !important; font-weight: 700 !important; }
-  #sidebar .ss-label { color: #8b95a3 !important; }
 
-  /* ── BRAND ── */
-  #sidebar .brand-name { color: #f0f1f5 !important; }
-  #sidebar .brand-sub  { color: #5e6a7c !important; }
+  #sidebar .ss-value {
+    color: #f0f1f5 !important;
+    font-weight: 700 !important;
+  }
 
-  /* ── FOOTER ── */
+  #sidebar .ss-label {
+    color: #8b95a3 !important;
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     BRAND
+  ────────────────────────────────────────────────────────── */
+  #sidebar .brand-name {
+    color: #f0f1f5 !important;
+  }
+
+  #sidebar .brand-sub {
+    color: #5e6a7c !important;
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     CLOSE BUTTON
+  ────────────────────────────────────────────────────────── */
+  #sidebar .sidebar-close {
+    display: flex !important;
+
+    pointer-events: auto !important;
+
+    cursor: pointer !important;
+
+    color: #c0b8ff !important;
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     FOOTER
+  ────────────────────────────────────────────────────────── */
   #sidebar .sidebar-footer {
     margin-top: auto !important;
+
     border-top: 1px solid rgba(255, 255, 255, 0.07) !important;
+
     padding: 12px 14px !important;
+
     display: flex !important;
     align-items: center !important;
     gap: 6px !important;
   }
 
-  /* ── USER CHIP ── */
-  #sidebar .suc-name  { color: #f0f1f5 !important; }
-  #sidebar .suc-email { color: #5e6a7c !important; }
+  /* ──────────────────────────────────────────────────────────
+     USER CHIP
+  ────────────────────────────────────────────────────────── */
+  #sidebar .suc-name {
+    color: #f0f1f5 !important;
+  }
+
+  #sidebar .suc-email {
+    color: #5e6a7c !important;
+  }
+
   #sidebar .sidebar-user-chip {
     background: rgba(255, 255, 255, 0.04) !important;
+
     border: 1px solid rgba(255, 255, 255, 0.08) !important;
   }
 
-  /* ── MAIN CONTENT ── */
+  /* ──────────────────────────────────────────────────────────
+     TOPBAR
+  ────────────────────────────────────────────────────────── */
+  .topbar {
+    position: fixed !important;
+
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+
+    z-index: 600 !important;
+
+    background: #0d0f14 !important;
+
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  }
+
+  [data-theme="light"] .topbar {
+    background: #f4f5f8 !important;
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     HAMBURGER
+  ────────────────────────────────────────────────────────── */
+  #hamburger {
+    pointer-events: auto !important;
+
+    touch-action: manipulation !important;
+
+    cursor: pointer !important;
+
+    z-index: 610 !important;
+
+    position: relative !important;
+  }
+
+  .hamburger span {
+    background: #c0c8d8 !important;
+  }
+
+  [data-theme="light"] .hamburger span {
+    background: #4b5563 !important;
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     MAIN CONTENT
+  ────────────────────────────────────────────────────────── */
   .main-content {
     margin-left: 0 !important;
     padding-top: var(--topbar-h, 56px) !important;
   }
 
-  /* ── BODY SCROLL LOCK ── */
+  /* ──────────────────────────────────────────────────────────
+     BODY SCROLL LOCK
+  ────────────────────────────────────────────────────────── */
   body.sidebar-open {
     overflow: hidden !important;
-    /* NO position:fixed — it causes layout shift and breaks touch events */
   }
 }
