@@ -229,8 +229,11 @@
   }
 
   #sidebar .ss-value {
-    color: #0e0e0e !important;
+    color: #ffffff !important;
     font-weight: 700 !important;
+  }
+  [data-theme="light"] #sidebar .ss-value {
+    color: #0e0e0e !important;
   }
 
   #sidebar .ss-label {
