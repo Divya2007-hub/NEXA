@@ -345,4 +345,16 @@
   body.sidebar-open {
     overflow: hidden !important;
   }
+
+  /* ──────────────────────────────────────────────────────────
+     INPUT BAR — hide when sidebar is open on mobile.
+     The input bar is fixed-positioned and sits above the
+     overlay (z-index 400 vs overlay 750), so it bleeds
+     through on the Tasks tab. Hiding it while the drawer
+     is open is safe because you can't interact with it
+     anyway while the sidebar covers the screen.
+  ────────────────────────────────────────────────────────── */
+  body.sidebar-open #input-bar {
+    display: none !important;
+  }
 }
