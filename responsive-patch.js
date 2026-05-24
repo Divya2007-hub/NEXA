@@ -1,38 +1,40 @@
 /**
- * NEXA — Responsive Layout Patch v4.0
- * Only does TWO things:
- *  1. Repositions the sync badge (sidebar footer on desktop, hidden on mobile)
- *  2. Ensures nav items close the sidebar on mobile after switching tabs
- *
- * Does NOT touch hamburger/sidebar open/close — script.js owns that.
+ * NEXA — Responsive Layout Patch v5.0
+ * Clean, minimal. Does NOT duplicate script.js hamburger logic.
+ * Only handles:
+ *  1. Sync badge repositioning (sidebar footer on desktop, hidden mobile)
+ *  2. Closing sidebar when a nav tab is picked on mobile
+ *  3. Cleanup on resize
  */
 (function () {
   'use strict';
 
-  const MOBILE_BP = 768;
+  var MOBILE_BP = 768;
 
-  /* ── Badge repositioning ── */
+  function isMobile() {
+    return window.innerWidth <= MOBILE_BP;
+  }
+
+  /* ── Move sync badge into sidebar footer on desktop ── */
   function placeBadge() {
-    var badge       = document.getElementById('autosave-indicator');
-    var sidebarFoot = document.querySelector('.sidebar-footer');
+    var badge = document.getElementById('autosave-indicator');
+    var foot  = document.querySelector('.sidebar-footer');
     if (!badge) return;
-
-    if (window.innerWidth <= MOBILE_BP) {
+    if (isMobile()) {
       badge.style.display = 'none';
     } else {
       badge.style.display = '';
-      if (sidebarFoot && !sidebarFoot.contains(badge)) {
-        sidebarFoot.insertBefore(badge, sidebarFoot.firstChild);
+      if (foot && !foot.contains(badge)) {
+        foot.insertBefore(badge, foot.firstChild);
       }
     }
   }
 
-  /* ── Close sidebar when a nav tab is tapped on mobile ── */
+  /* ── Close sidebar after picking a nav tab on mobile ── */
   function wireNavClose() {
     document.querySelectorAll('.nav-item[data-tab]').forEach(function (btn) {
       btn.addEventListener('click', function () {
-        if (window.innerWidth > MOBILE_BP) return;
-        /* script.js already handles switchTab; we just close the sidebar */
+        if (!isMobile()) return;
         var sidebar = document.getElementById('sidebar');
         var overlay = document.getElementById('sidebar-overlay');
         var ham     = document.getElementById('hamburger');
@@ -43,10 +45,10 @@
     });
   }
 
-  /* ── Resize: hide badge on mobile, show on desktop ── */
+  /* ── Reset sidebar state on resize to desktop ── */
   function onResize() {
     placeBadge();
-    if (window.innerWidth > MOBILE_BP) {
+    if (!isMobile()) {
       var sidebar = document.getElementById('sidebar');
       var overlay = document.getElementById('sidebar-overlay');
       if (sidebar) sidebar.classList.remove('open');
@@ -60,7 +62,7 @@
     var t;
     window.addEventListener('resize', function () {
       clearTimeout(t);
-      t = setTimeout(onResize, 120);
+      t = setTimeout(onResize, 100);
     });
   }
 
