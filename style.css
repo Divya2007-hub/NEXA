@@ -601,6 +601,69 @@ body {
   -webkit-backdrop-filter: blur(40px);
   animation: cmd-in .22s cubic-bezier(.34,1.56,.64,1) both;
 }
+/* In style.css, after the existing .cmd-palette styles, add: */
+
+[data-theme="light"] .cmd-overlay {
+  background: rgba(0, 0, 0, 0.35);
+}
+
+[data-theme="light"] .cmd-palette {
+  background: rgba(255, 255, 255, 0.97);
+  border-color: rgba(0, 0, 0, 0.12);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.15), 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .cmd-input {
+  color: #0d0f16;
+}
+
+[data-theme="light"] .cmd-result-item {
+  color: #4b5563;
+  border-bottom-color: rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="light"] .cmd-result-item:hover,
+[data-theme="light"] .cmd-result-item.focused {
+  background: rgba(124, 110, 247, 0.08);
+  color: #0d0f16;
+}
+
+[data-theme="light"] .cmd-result-icon {
+  color: #6b7280;
+}
+
+[data-theme="light"] .cmd-result-item:hover .cmd-result-icon,
+[data-theme="light"] .cmd-result-item.focused .cmd-result-icon {
+  color: var(--ac);
+}
+
+[data-theme="light"] .cmd-result-shortcut {
+  background: #f3f4f6;
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #6b7280;
+}
+
+[data-theme="light"] .cmd-footer {
+  background: rgba(0, 0, 0, 0.03);
+  border-top-color: rgba(0, 0, 0, 0.06);
+  color: #9ca3af;
+}
+
+[data-theme="light"] .cmd-footer kbd {
+  background: #f3f4f6;
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #6b7280;
+}
+
+[data-theme="light"] .cmd-esc {
+  background: #f3f4f6;
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #6b7280;
+}
+
+[data-theme="light"] .cmd-icon {
+  color: var(--ac);
+}
 @keyframes cmd-in { from{opacity:0;transform:translateY(-10px) scale(.97)} to{opacity:1;transform:translateY(0) scale(1)} }
 .cmd-header {
   display: flex; align-items: center; gap: 10px;
