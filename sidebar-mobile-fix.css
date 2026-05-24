@@ -148,7 +148,7 @@
        that's handled correctly in script.js
   ────────────────────────────────────────────────────────── */
   #sidebar .nav-item {
-    color: #c8cdd6 !important;
+    color: #516280 !important;
     background: transparent !important;
 
     pointer-events: auto !important;
@@ -229,7 +229,7 @@
   }
 
   #sidebar .ss-value {
-    color: #f0f1f5 !important;
+    color: #0e0e0e !important;
     font-weight: 700 !important;
   }
 
@@ -241,7 +241,7 @@
      BRAND
   ────────────────────────────────────────────────────────── */
   #sidebar .brand-name {
-    color: #f0f1f5 !important;
+    color: #030303 !important;
   }
 
   #sidebar .brand-sub {
@@ -276,8 +276,8 @@
   /* ──────────────────────────────────────────────────────────
      USER CHIP
   ────────────────────────────────────────────────────────── */
-  #sidebar .suc-name  { color: #f0f1f5 !important; }
-  #sidebar .suc-email { color: #5e6a7c !important; }
+  #sidebar .suc-name  { color: #080808 !important; }
+  #sidebar .suc-email { color: #475365 !important; }
 
   #sidebar .sidebar-user-chip {
     background: rgba(255, 255, 255, 0.04) !important;
