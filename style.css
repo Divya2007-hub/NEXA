@@ -3517,10 +3517,17 @@ body.guest-mode .toast-container { bottom: 130px; }
   .add-btn     { width: 46px !important; height: 46px !important; flex-shrink: 0 !important; }
 }
 /* ══════════════════════════════════════════════════════════════
-   MOBILE COMPLETE FIX — Hamburger, Sidebar, Nav, Sync Pill
+   MOBILE NAVIGATION FIX v4
+   Root cause: main-content has overflow:auto (scroll) which
+   creates an isolated stacking context, trapping the topbar's
+   z-index INSIDE it. The sidebar (outside main-content) then
+   appears BELOW the topbar on iOS/Android Chrome.
+   Fix: pull topbar OUT of the stacking context trap by making
+   it position:fixed on mobile, and give sidebar/overlay high
+   enough z-index to appear above everything.
 ══════════════════════════════════════════════════════════════ */
 
-/* ── Sidebar footer: sync pill inline on desktop ── */
+/* Desktop: sync pill inline in sidebar footer */
 .sidebar-footer #autosave-indicator {
   position: static !important;
   transform: none !important;
@@ -3533,77 +3540,76 @@ body.guest-mode .toast-container { bottom: 130px; }
   padding: 4px 8px !important;
 }
 
-/* ── Mobile fixes ── */
 @media (max-width: 768px) {
 
-  /* Hide sync pill on mobile — no room in topbar */
-  #autosave-indicator { display: none !important; }
-
-  /* Topbar: highest z so nothing covers it */
-  .topbar {
-    position: sticky !important;
-    top: 0 !important;
-    z-index: 9500 !important;
-    pointer-events: all !important;
-    display: flex !important;
+  /* 1. Hide sync pill — no room */
+  #autosave-indicator {
+    display: none !important;
   }
 
-  /* Hamburger: large tap target, always clickable */
-  #hamburger {
-    position: relative !important;
-    z-index: 9600 !important;
+  /* 2. Fix the stacking context trap:
+        main-content has overflow:auto which isolates z-index.
+        Make topbar fixed so it escapes the stacking context. */
+  .topbar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: var(--topbar-h) !important;
+    z-index: 500 !important;
+    display: flex !important;
     pointer-events: all !important;
-    cursor: pointer !important;
-    touch-action: manipulation !important;
-    -webkit-tap-highlight-color: rgba(124,110,247,.25) !important;
+  }
+
+  /* 3. Push main-content down so content isn't hidden under fixed topbar */
+  .main-content {
+    padding-top: var(--topbar-h) !important;
+  }
+
+  /* 4. Hamburger: big tap target */
+  #hamburger {
     min-width: 44px !important;
     min-height: 44px !important;
     width: 44px !important;
     height: 44px !important;
+    pointer-events: all !important;
+    touch-action: manipulation !important;
+    -webkit-tap-highlight-color: rgba(124,110,247,.2) !important;
+    position: relative !important;
+    z-index: 510 !important;
   }
 
-  /* Sidebar: slides in over everything */
+  /* 5. Sidebar: above the fixed topbar */
   #sidebar {
-    z-index: 9800 !important;
+    z-index: 600 !important;
     pointer-events: all !important;
   }
-
-  /* Overlay: just below sidebar */
-  #sidebar-overlay {
-    z-index: 9700 !important;
+  #sidebar .nav-item,
+  #sidebar button,
+  #sidebar-close {
+    pointer-events: all !important;
+    touch-action: manipulation !important;
+    min-height: 48px;
   }
 
-  /* Background decorations: never block clicks */
+  /* 6. Overlay: between topbar and sidebar */
+  #sidebar-overlay {
+    z-index: 550 !important;
+  }
+
+  /* 7. Background decorations never block anything */
   .bg-grid, .bg-orb, .orb-1, .orb-2 {
     z-index: 0 !important;
     pointer-events: none !important;
   }
 
-  /* app-shell: do NOT create a stacking context that traps the topbar */
+  /* 8. Nothing in app-shell creates a competing stacking context */
   .app-shell {
-    position: relative;
-    z-index: auto !important;
+    isolation: auto !important;
   }
-
-  /* main-content: no stacking context on mobile */
   .main-content {
-    position: relative;
-    z-index: auto !important;
-  }
-
-  /* Nav items inside open sidebar: fully tappable */
-  #sidebar .nav-item {
-    pointer-events: all !important;
-    position: relative !important;
-    z-index: 9810 !important;
-    min-height: 48px;
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: rgba(124,110,247,.15);
-  }
-
-  /* Sidebar close button */
-  #sidebar-close {
-    pointer-events: all !important;
-    z-index: 9810 !important;
+    isolation: auto !important;
+    overflow-y: auto;
+    overflow-x: hidden;
   }
 }

@@ -1,30 +1,25 @@
 /**
- * NEXA — Responsive Layout Patch v3.0
- * Fixes:
- *  1. Sidebar open/close on mobile (hamburger + overlay + close btn)
- *  2. Nav tab switching from inside the sidebar on mobile
- *  3. Autosave/sync indicator repositioning per breakpoint
+ * NEXA — Responsive Layout Patch v4.0
+ * Only does TWO things:
+ *  1. Repositions the sync badge (sidebar footer on desktop, hidden on mobile)
+ *  2. Ensures nav items close the sidebar on mobile after switching tabs
+ *
+ * Does NOT touch hamburger/sidebar open/close — script.js owns that.
  */
-
 (function () {
   'use strict';
 
   const MOBILE_BP = 768;
 
-  /* ════════════════════════════════
-     BADGE REPOSITIONING
-  ════════════════════════════════ */
+  /* ── Badge repositioning ── */
   function placeBadge() {
-    const badge       = document.getElementById('autosave-indicator');
-    const topbarAct   = document.querySelector('.topbar-actions');
-    const sidebarFoot = document.querySelector('.sidebar-footer');
+    var badge       = document.getElementById('autosave-indicator');
+    var sidebarFoot = document.querySelector('.sidebar-footer');
     if (!badge) return;
 
     if (window.innerWidth <= MOBILE_BP) {
-      /* On mobile: hide from topbar — it's too cluttered. Just hide it. */
       badge.style.display = 'none';
     } else {
-      /* On desktop: put it back in the sidebar footer, inline */
       badge.style.display = '';
       if (sidebarFoot && !sidebarFoot.contains(badge)) {
         sidebarFoot.insertBefore(badge, sidebarFoot.firstChild);
@@ -32,105 +27,40 @@
     }
   }
 
-  /* ════════════════════════════════
-     SIDEBAR OPEN / CLOSE
-  ════════════════════════════════ */
-  function openSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('sidebar-overlay');
-    const hamburger = document.getElementById('hamburger');
-    if (sidebar) sidebar.classList.add('open');
-    if (overlay) overlay.classList.add('visible');
-    if (hamburger) hamburger.setAttribute('aria-expanded', 'true');
-  }
-
-  function closeSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('sidebar-overlay');
-    const hamburger = document.getElementById('hamburger');
-    if (sidebar) sidebar.classList.remove('open');
-    if (overlay) overlay.classList.remove('visible');
-    if (hamburger) hamburger.setAttribute('aria-expanded', 'false');
-  }
-
-  function isMobile() {
-    return window.innerWidth <= MOBILE_BP;
-  }
-
-  /* ════════════════════════════════
-     WIRE ALL SIDEBAR TRIGGERS
-  ════════════════════════════════ */
-  function wireSidebar() {
-    const hamburger   = document.getElementById('hamburger');
-    const sidebarClose= document.getElementById('sidebar-close');
-    const overlay     = document.getElementById('sidebar-overlay');
-
-    /* Hamburger — toggle sidebar */
-    if (hamburger) {
-      hamburger.addEventListener('click', function (e) {
-        e.stopPropagation();
-        const sidebar = document.getElementById('sidebar');
-        if (sidebar && sidebar.classList.contains('open')) {
-          closeSidebar();
-        } else {
-          openSidebar();
-        }
-      });
-    }
-
-    /* Close button inside sidebar */
-    if (sidebarClose) {
-      sidebarClose.addEventListener('click', function (e) {
-        e.stopPropagation();
-        closeSidebar();
-      });
-    }
-
-    /* Overlay tap — close */
-    if (overlay) {
-      overlay.addEventListener('click', function () {
-        closeSidebar();
-      });
-    }
-  }
-
-  /* ════════════════════════════════
-     WIRE NAV ITEMS — close sidebar after tab switch on mobile
-  ════════════════════════════════ */
-  function wireNavItems() {
+  /* ── Close sidebar when a nav tab is tapped on mobile ── */
+  function wireNavClose() {
     document.querySelectorAll('.nav-item[data-tab]').forEach(function (btn) {
       btn.addEventListener('click', function () {
-        if (isMobile()) {
-          /* Small delay so script.js tab switch runs first */
-          setTimeout(closeSidebar, 80);
-        }
+        if (window.innerWidth > MOBILE_BP) return;
+        /* script.js already handles switchTab; we just close the sidebar */
+        var sidebar = document.getElementById('sidebar');
+        var overlay = document.getElementById('sidebar-overlay');
+        var ham     = document.getElementById('hamburger');
+        if (sidebar) sidebar.classList.remove('open');
+        if (overlay) overlay.classList.remove('visible');
+        if (ham)     ham.setAttribute('aria-expanded', 'false');
       });
     });
   }
 
-  /* ════════════════════════════════
-     RESIZE HANDLER
-  ════════════════════════════════ */
+  /* ── Resize: hide badge on mobile, show on desktop ── */
   function onResize() {
     placeBadge();
-    /* Auto-close sidebar when resizing to desktop */
-    if (!isMobile()) {
-      closeSidebar();
+    if (window.innerWidth > MOBILE_BP) {
+      var sidebar = document.getElementById('sidebar');
+      var overlay = document.getElementById('sidebar-overlay');
+      if (sidebar) sidebar.classList.remove('open');
+      if (overlay) overlay.classList.remove('visible');
     }
   }
 
-  /* ════════════════════════════════
-     INIT
-  ════════════════════════════════ */
   function init() {
     placeBadge();
-    wireSidebar();
-    wireNavItems();
-
-    let resizeTimer;
+    wireNavClose();
+    var t;
     window.addEventListener('resize', function () {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(onResize, 120);
+      clearTimeout(t);
+      t = setTimeout(onResize, 120);
     });
   }
 
