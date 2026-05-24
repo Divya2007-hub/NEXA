@@ -488,15 +488,50 @@ body {
 ══════════════════════════ */
 .toast-container {
   position: fixed; 
-  bottom: 160px; /* 1. Shifted up from 110px to sit safely above the Nexa AI button */
-  right: 20px;  /* 2. Moved closer to the edge to take up less center space */
+  bottom: 160px;
+  right: 20px;
   display: flex; 
   flex-direction: column-reverse; 
   gap: 6px;
   z-index: 8000; 
   pointer-events: none;
-  max-width: 280px; /* 3. Made narrower (down from 320px) so it doesn't spread wide */
+  max-width: 280px;
   width: 100%;
+}
+
+/* Mobile: anchor both sides so toast never overflows */
+@media (max-width: 768px) {
+  .toast-container {
+    left: 12px !important;
+    right: 12px !important;
+    max-width: calc(100vw - 24px) !important;
+    width: auto !important;
+    bottom: 170px !important;
+  }
+  .toast {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .toast-msg {
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
+    font-size: .75rem !important;
+    line-height: 1.45 !important;
+  }
+  body.guest-mode .toast-container {
+    bottom: 195px !important;
+  }
+}
+@media (max-width: 480px) {
+  .toast-container {
+    left: 8px !important;
+    right: 8px !important;
+    max-width: calc(100vw - 16px) !important;
+    bottom: 178px !important;
+  }
+  .toast-msg { font-size: .73rem !important; }
 }
 .toast {
   display: flex; align-items: center; gap: 10px;
