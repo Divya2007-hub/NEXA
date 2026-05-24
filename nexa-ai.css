@@ -343,6 +343,16 @@
   filter: grayscale(0.3);
   /* position stays fixed — do NOT override */
 }
+
+/* ── Guest mode: raise button above the preview banner + input bar ── */
+body.guest-mode #nexa-ai-btn {
+  bottom: 220px;
+}
+@media (max-width: 768px) {
+  body.guest-mode #nexa-ai-btn {
+    bottom: 240px;
+  }
+}
 #nexa-ai-btn.ai-btn-locked::after {
   content: '🔒';
   position: absolute;
