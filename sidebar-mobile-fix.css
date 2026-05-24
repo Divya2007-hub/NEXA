@@ -20,7 +20,7 @@
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 
     /* CRITICAL: solid opaque background — no backdrop-filter, no isolation */
-    background: #0d0f16 !important;
+    background: var(--bg, #0d0f16) !important;
     isolation: auto !important;          /* removes the stacking-context that hides content */
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;

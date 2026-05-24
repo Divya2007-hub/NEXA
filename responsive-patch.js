@@ -89,6 +89,17 @@
       }
     }
   }
+  function fixUndoBannerPosition() {
+    var undo = document.getElementById('undo-banner');
+    if (!undo) return;
+    if (isMobile()) {
+      undo.style.bottom = '160px';  // above the input bar
+      undo.style.zIndex = '6000';
+    } else {
+      undo.style.bottom = '';
+      undo.style.zIndex = '';
+    }
+  }
 
   /* ── Resize cleanup ── */
   function onResize() {
@@ -106,6 +117,7 @@
   /* ── Init ── */
   function init() {
     placeBadge();
+    fixUndoBannerPosition(); 
     watchSidebar();
     wireNavClose();
 

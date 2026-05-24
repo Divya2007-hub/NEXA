@@ -1,7 +1,6 @@
 /**
- * NEXA — Mobile Sidebar Fix  v2.0
- * ONLY fixes: hamburger open/close + sidebar visibility
- * Does NOT clone nav items — uses window.switchTab directly
+ * NEXA — Mobile Sidebar Fix  v3.0
+ * FIXED: Single tap nav (no double-click required)
  */
 'use strict';
 
@@ -30,7 +29,7 @@
   }
 
   function init() {
-    /* ── Hamburger ── */
+
     var ham = document.getElementById('hamburger');
     if (ham) {
       ham.addEventListener('click', function (e) {
@@ -46,7 +45,6 @@
       }, { passive: false });
     }
 
-    /* ── Overlay tap ── */
     var overlay = document.getElementById('sidebar-overlay');
     if (overlay) {
       overlay.addEventListener('click', closeSidebar);
@@ -56,7 +54,6 @@
       }, { passive: false });
     }
 
-    /* ── Sidebar close button ── */
     var closeBtn = document.getElementById('sidebar-close');
     if (closeBtn) {
       closeBtn.addEventListener('click', closeSidebar);
@@ -66,22 +63,35 @@
       }, { passive: false });
     }
 
-    /* ── Nav items: just close sidebar on mobile, let script.js handle tab switch ── */
+    /* SINGLE TAP NAV FIX */
     document.querySelectorAll('.nav-item[data-tab]').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        if (isMobile()) setTimeout(closeSidebar, 80);
-      });
+      var tabName = btn.getAttribute('data-tab');
+
       btn.addEventListener('touchend', function (e) {
-        /* Don't preventDefault — let the click fire naturally for switchTab */
-        if (isMobile()) setTimeout(closeSidebar, 80);
-      }, { passive: true });
+        if (!isMobile()) return;
+        e.preventDefault();        // cancel ghost click
+        e.stopPropagation();
+
+        // Switch tab immediately — no delay
+        if (typeof window.switchTab === 'function') {
+          window.switchTab(tabName);
+        }
+
+        // Close sidebar immediately — no setTimeout
+        closeSidebar();
+      }, { passive: false });
+
+      btn.addEventListener('click', function () {
+        if (isMobile()) closeSidebar();
+        // desktop: script.js handles switchTab
+      });
     });
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () { setTimeout(init, 150); });
+    document.addEventListener('DOMContentLoaded', function () { setTimeout(init, 100); });
   } else {
-    setTimeout(init, 150);
+    setTimeout(init, 100);
   }
 
 })();
