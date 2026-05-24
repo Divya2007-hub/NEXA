@@ -1122,7 +1122,7 @@ body.bulk-mode .drag-handle { display: none !important; }
   z-index: 100; transition: background var(--tr-s), left var(--tr-s);
   box-shadow: 0 -4px 24px rgba(0,0,0,.22);
 }
-.input-bar.hidden { display: none; }
+.input-bar.hidden { display: none !important; }
 .input-row { display: flex; gap: 8px; align-items: center; }
 .task-input {
   flex: 1; height: 42px;
