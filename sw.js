@@ -37,7 +37,10 @@ const PRECACHE_URLS = [
   '/favicon.ico',
 
   '/icons/icon-192.png',
-  '/icons/icon-512.png'
+  '/icons/icon-512.png',
+
+  '/sidebar-mobile-fix.css',
+  '/sidebar-mobile-fix.js'
 ];
 
 /* ═══════════════════════════════════════════════════════════════════
