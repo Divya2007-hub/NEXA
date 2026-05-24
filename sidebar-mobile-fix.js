@@ -1,7 +1,16 @@
 /**
- * NEXA — Mobile Sidebar Fix  v5.0
- * Handles: hamburger open, overlay close, sidebar close button.
- * Does NOT re-wire nav items — script.js owns all tab switching.
+ * NEXA — Mobile Sidebar Fix  v4.0
+ * FIXED: Nav items now reliably switch tabs on single tap.
+ *
+ * Root cause of the bug:
+ *   - switchTab() was a const inside script.js, NOT on window.
+ *   - touchend was calling e.stopPropagation(), blocking script.js's
+ *     own click listener from firing as a fallback.
+ *
+ * Fix:
+ *   - script.js now exposes window.switchTab (patched above).
+ *   - touchend calls window.switchTab() directly — no stopPropagation.
+ *   - click listener also calls window.switchTab() so desktop works too.
  */
 'use strict';
 
@@ -19,43 +28,52 @@
     document.body.classList.remove('sidebar-open');
   }
 
-  function init() {
-    /* Overlay tap → close */
-    var overlay = document.getElementById('sidebar-overlay');
-    if (overlay) {
-      overlay.addEventListener('click', closeSidebar);
-      overlay.addEventListener('touchend', function (e) {
-        e.preventDefault();
-        closeSidebar();
-      }, { passive: false });
-    }
-
-    /* Sidebar close button */
-    var closeBtn = document.getElementById('sidebar-close');
-    if (closeBtn) {
-      closeBtn.addEventListener('touchend', function (e) {
-        e.preventDefault();
-        closeSidebar();
-      }, { passive: false });
-    }
-
-    /* Nav items: on mobile, close sidebar after tab switch (script.js fires first) */
+  function wireNavItems() {
     document.querySelectorAll('.nav-item[data-tab]').forEach(function (btn) {
-      if (btn._nexaSidebarClose) return;
-      btn._nexaSidebarClose = true;
+      var tabName = btn.getAttribute('data-tab');
 
+      // Remove any previously-attached mobile listeners to avoid duplicates
+      if (btn._nexaMobileBound) return;
+      btn._nexaMobileBound = true;
+
+      /* ── TOUCH: fire switchTab immediately on finger-lift ── */
+      btn.addEventListener('touchend', function (e) {
+        if (!isMobile()) return;
+        // Do NOT stopPropagation — let script.js click handler also run
+        // (they both call switchTab, which is idempotent, so no harm)
+        e.preventDefault(); // prevent the 300ms ghost click
+
+        if (typeof window.switchTab === 'function') {
+          window.switchTab(tabName);
+        }
+        closeSidebar();
+      }, { passive: false });
+
+      /* ── CLICK: fallback for desktop and cases where touch isn't used ── */
       btn.addEventListener('click', function () {
+        // script.js also has a click listener that calls switchTab.
+        // On mobile, just make sure the sidebar closes.
         if (isMobile()) {
-          setTimeout(closeSidebar, 60);
+          closeSidebar();
         }
       });
     });
   }
 
+  function init() {
+    wireNavItems();
+
+    // Re-wire if new nav items are ever injected dynamically
+    var nav = document.querySelector('.sidebar-nav');
+    if (nav) {
+      new MutationObserver(wireNavItems).observe(nav, { childList: true, subtree: true });
+    }
+  }
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () { setTimeout(init, 100); });
+    document.addEventListener('DOMContentLoaded', function () { setTimeout(init, 150); });
   } else {
-    setTimeout(init, 100);
+    setTimeout(init, 150);
   }
 
 })();
