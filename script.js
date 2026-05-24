@@ -749,6 +749,9 @@ const switchTab = name => {
   if (name === 'settings')  initSettingsPage();
 };
 
+/* Expose switchTab globally so sidebar-mobile-fix.js and other modules can call it */
+window.switchTab = switchTab;
+
 document.querySelectorAll('.nav-item').forEach(btn => {
   const onNav = e => {
     e.stopPropagation();

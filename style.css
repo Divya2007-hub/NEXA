@@ -4048,11 +4048,10 @@ body.guest-mode .toast-container { bottom: 130px; }
     margin: 0 8px 8px !important;
   }
 
-  /* ── BODY SCROLL LOCK — applied by JS via class ── */
+  /* ── BODY SCROLL LOCK — overflow only; position:fixed causes
+     layout shift and swallows touch events on the sidebar ── */
   body.sidebar-open {
     overflow: hidden !important;
-    position: fixed !important;
-    width: 100% !important;
   }
 
   /* ── TOPBAR: always above overlay ── */
