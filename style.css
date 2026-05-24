@@ -2453,7 +2453,7 @@ body.guest-mode .task-list .task-item .task-actions {
 /* ── Fix calendar overflow on mobile (was min-width: 480px, breaking layout) ── */
 @media (max-width: 768px) {
   .cal-week-grid {
-    min-width: 0 !important;
+    min-width: 480px;
     grid-template-columns: repeat(7, minmax(0, 1fr));
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
@@ -3599,7 +3599,7 @@ body.guest-mode .toast-container { bottom: 130px; }
   .main-content {
     margin-left: 0 !important;
     width: 100% !important;
-    min-width: 0 !important;
+    min-width: 480px;
     padding-top: var(--topbar-h) !important;
     overflow-x: hidden !important;
   }
@@ -3681,7 +3681,7 @@ body.guest-mode .toast-container { bottom: 130px; }
   }
   .task-input {
     flex: 1 !important;
-    min-width: 0 !important;
+    min-width: 480px;
     height: 44px !important;
     font-size: .85rem !important;
   }
@@ -3743,7 +3743,7 @@ body.guest-mode .toast-container { bottom: 130px; }
   .guest-banner-text {
     font-size: .72rem !important;
     white-space: normal !important;
-    min-width: 0 !important;
+    min-width: 480px;
     flex: 1 !important;
   }
   .guest-banner-text span { display: none !important; }
@@ -3828,7 +3828,7 @@ body.guest-mode .toast-container { bottom: 130px; }
   }
   .pomodoro-card {
     width: 100% !important;
-    min-width: 0 !important;
+    min-width: 480px;
   }
   .pomo-ring-wrap { width: 180px !important; height: 180px !important; }
   .pomo-ring { width: 180px !important; height: 180px !important; }
