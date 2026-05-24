@@ -1,33 +1,12 @@
 /* ══════════════════════════════════════════════════════════════
-   NEXA — Mobile Sidebar Fix  v5.0
-   Load LAST, after all other CSS files.
-
-   Changes from v4.0:
-   - Unified z-index stack. Three different files were declaring
-     three different z-index values for the same elements. The
-     last file in load order won, making behaviour unpredictable.
-     This file is loaded last so it is authoritative.
-     Stack (highest to lowest):
-       .nav-item inside sidebar  : z-index 10   (relative, not fixed)
-       #sidebar                  : z-index 800
-       #sidebar-overlay          : z-index 750
-       .topbar                   : z-index 600
-       #hamburger                : z-index 610
-   - REMOVED z-index: 9999 from .nav-item. A nav item inside the
-     sidebar does not need a fixed z-index of 9999. It just needs
-     to be above the sidebar's own background, which position:relative
-     + z-index:1 achieves cleanly.
-   - FIXED touch-action on nav items: changed from "auto" to
-     "manipulation". "auto" allows the browser to classify fast taps
-     as scroll-start gestures and swallow them silently.
-   - FIXED #sidebar-overlay inset: overlay now starts AFTER the
-     sidebar width so it can never overlap the open sidebar panel.
-     This was the most common cause of "tap the nav item but nothing
-     happens" — the overlay was covering the sidebar on some Android
-     Chrome versions.
-   - REMOVED conflicting !important rules that fought with style.css
-     bottom mega-block. Only rules this file uniquely owns use
-     !important; shared properties use normal specificity where possible.
+   NEXA — Mobile Sidebar Fix  |  sidebar-mobile-fix.css
+   Fixes:
+   ✅ Invisible sidebar content
+   ✅ Non-working nav item clicks
+   ✅ Mobile touch issues
+   ✅ Overlay blocking taps
+   ✅ Works in DARK + LIGHT mode
+   Load LAST, after all other CSS files
 ══════════════════════════════════════════════════════════════ */
 
 @media (max-width: 768px) {
@@ -40,34 +19,35 @@
     top: 0 !important;
     left: 0 !important;
     bottom: 0 !important;
+
     height: 100dvh !important;
-    width: min(82vw, 300px) !important;
-    max-width: 300px !important;
+    width: min(80vw, 280px) !important;
 
-    /* Slide in from left */
     transform: translateX(-100%) !important;
-    transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1),
-                box-shadow 0.32s ease !important;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 
-    /* Authoritative z-index for this file (loaded last) */
-    z-index: 800 !important;
+    background: #0d0f16 !important;
 
-    /* Solid background — no backdrop-filter (causes iOS blur) */
-    background: var(--bg, #0a0a14) !important;
-    border-right: 1px solid rgba(124, 92, 255, 0.22) !important;
     isolation: auto !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
 
+    border-right: 1px solid rgba(124, 110, 247, 0.2) !important;
+
+    z-index: 900 !important;
+
     display: flex !important;
     flex-direction: column !important;
+
     overflow-y: auto !important;
     overflow-x: hidden !important;
+
     scrollbar-width: none !important;
 
-    /* Always visible and tappable */
     opacity: 1 !important;
     visibility: visible !important;
+
+    /* CLICK FIX */
     pointer-events: auto !important;
   }
 
@@ -77,36 +57,31 @@
 
   #sidebar.open {
     transform: translateX(0) !important;
-    box-shadow:
-      4px 0 40px rgba(124, 92, 255, 0.25),
-      8px 0 80px rgba(0, 0, 0, 0.6) !important;
+    box-shadow: 4px 0 32px rgba(0, 0, 0, 0.7) !important;
+
+    /* CLICK FIX */
     pointer-events: auto !important;
   }
 
   /* ──────────────────────────────────────────────────────────
      OVERLAY
-     KEY FIX: left: min(82vw, 300px) so it starts AFTER the
-     sidebar, never overlapping it. Previously inset:0 meant the
-     overlay covered the entire screen including the sidebar panel,
-     and on some Android Chrome builds it sat on top of it.
   ────────────────────────────────────────────────────────── */
   #sidebar-overlay {
     position: fixed !important;
-    top: 0 !important;
-    /* Start after sidebar width so it cannot overlap open sidebar */
-    left: min(82vw, 300px) !important;
-    right: 0 !important;
-    bottom: 0 !important;
+    inset: 0 !important;
 
-    /* Below sidebar, above main content */
-    z-index: 750 !important;
+    z-index: 800 !important;
 
-    background: rgba(0, 0, 0, 0.65) !important;
+    background: rgba(0, 0, 0, 0.06) !important;
+
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
 
     display: none !important;
+
     cursor: pointer !important;
+
+    /* IMPORTANT */
     pointer-events: auto !important;
   }
 
@@ -133,36 +108,27 @@
   #sidebar .sidebar-guest-chip {
     visibility: visible !important;
     opacity: 1 !important;
+
+    /* CLICK FIX */
     pointer-events: auto !important;
   }
 
   /* ──────────────────────────────────────────────────────────
-     NAV ITEMS
-     KEY FIXES:
-     - touch-action: manipulation (was "auto" — "auto" lets the
-       browser eat fast taps as scroll-start gestures)
-     - z-index: 1 with position: relative (was z-index: 9999
-       which broke stacking context inside the sidebar and caused
-       unpredictable hit-testing on some devices)
-     - NO e.preventDefault / e.stopPropagation interference here;
-       that's handled correctly in script.js
+     NAV ITEMS — FIXED CLICKABLE
   ────────────────────────────────────────────────────────── */
   #sidebar .nav-item {
     color: #c8cdd6 !important;
     background: transparent !important;
 
+    /* MAIN FIX */
     pointer-events: auto !important;
-
-    /* CRITICAL: manipulation prevents scroll-detection eating taps */
-    touch-action: manipulation !important;
-
+    touch-action: auto !important;
     user-select: none !important;
-    -webkit-user-select: none !important;
+
     -webkit-tap-highlight-color: rgba(124, 110, 247, 0.2) !important;
 
     cursor: pointer !important;
 
-    /* Large touch target */
     min-height: 48px !important;
     padding: 10px 12px !important;
 
@@ -178,9 +144,9 @@
     transition: background 0.15s, color 0.15s !important;
 
     position: relative !important;
-    /* Just enough z-index to be above sidebar background,
-       NOT a huge value that breaks stacking contexts */
-    z-index: 1 !important;
+
+    /* VERY IMPORTANT */
+    z-index: 9999 !important;
   }
 
   #sidebar .nav-item.active {
@@ -195,27 +161,23 @@
   }
 
   /* ──────────────────────────────────────────────────────────
-     NAV ICON + LABEL
+     NAV ICON
   ────────────────────────────────────────────────────────── */
   #sidebar .nav-icon {
     color: inherit !important;
     opacity: 1 !important;
+
     font-size: 0.95rem !important;
+
     flex-shrink: 0 !important;
     width: 22px !important;
+
     text-align: center !important;
-    /* Icon must not eat pointer events from parent button */
-    pointer-events: none !important;
   }
 
   #sidebar .nav-label {
     color: inherit !important;
     flex: 1 !important;
-    pointer-events: none !important;
-  }
-
-  #sidebar .nav-badge {
-    pointer-events: none !important;
   }
 
   /* ──────────────────────────────────────────────────────────
@@ -223,8 +185,11 @@
   ────────────────────────────────────────────────────────── */
   #sidebar .sidebar-stats {
     background: rgba(255, 255, 255, 0.05) !important;
+
     border: 1px solid rgba(255, 255, 255, 0.08) !important;
+
     margin: 0 12px 12px !important;
+
     border-radius: 10px !important;
   }
 
@@ -253,12 +218,12 @@
   ────────────────────────────────────────────────────────── */
   #sidebar .sidebar-close {
     display: flex !important;
+
     pointer-events: auto !important;
-    touch-action: manipulation !important;
+
     cursor: pointer !important;
+
     color: #c0b8ff !important;
-    min-width: 36px !important;
-    min-height: 36px !important;
   }
 
   /* ──────────────────────────────────────────────────────────
@@ -266,8 +231,11 @@
   ────────────────────────────────────────────────────────── */
   #sidebar .sidebar-footer {
     margin-top: auto !important;
+
     border-top: 1px solid rgba(255, 255, 255, 0.07) !important;
+
     padding: 12px 14px !important;
+
     display: flex !important;
     align-items: center !important;
     gap: 6px !important;
@@ -276,26 +244,37 @@
   /* ──────────────────────────────────────────────────────────
      USER CHIP
   ────────────────────────────────────────────────────────── */
-  #sidebar .suc-name  { color: #f0f1f5 !important; }
-  #sidebar .suc-email { color: #5e6a7c !important; }
+  #sidebar .suc-name {
+    color: #f0f1f5 !important;
+  }
+
+  #sidebar .suc-email {
+    color: #5e6a7c !important;
+  }
 
   #sidebar .sidebar-user-chip {
     background: rgba(255, 255, 255, 0.04) !important;
+
     border: 1px solid rgba(255, 255, 255, 0.08) !important;
   }
 
   /* ──────────────────────────────────────────────────────────
-     TOPBAR — fixed, above main content but below sidebar
+     TOPBAR
   ────────────────────────────────────────────────────────── */
   .topbar {
     position: fixed !important;
+
     top: 0 !important;
     left: 0 !important;
     right: 0 !important;
+
     z-index: 600 !important;
+
     background: #0d0f14 !important;
+
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
+
     border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
   }
 
@@ -303,17 +282,35 @@
     background: #f4f5f8 !important;
   }
 
+  /* Light theme sidebar overrides */
+  [data-theme="light"] #sidebar {
+    background: #ffffff !important;
+    border-right: 1px solid rgba(0, 0, 0, 0.08) !important;
+  }
+  [data-theme="light"] #sidebar .nav-item       { color: #4b5563 !important; }
+  [data-theme="light"] #sidebar .nav-item.active { color: var(--ac) !important; background: rgba(124,110,247,.08) !important; }
+  [data-theme="light"] #sidebar .brand-name      { color: #0d0f16 !important; }
+  [data-theme="light"] #sidebar .brand-sub       { color: #9ca3af !important; }
+  [data-theme="light"] #sidebar .ss-value        { color: #0d0f16 !important; }
+  [data-theme="light"] #sidebar .ss-label        { color: #6b7280 !important; }
+  [data-theme="light"] #sidebar .suc-name        { color: #0d0f16 !important; }
+  [data-theme="light"] #sidebar .suc-email       { color: #6b7280 !important; }
+  [data-theme="light"] #sidebar .sidebar-stats   { background: rgba(0,0,0,.04) !important; border-color: rgba(0,0,0,.08) !important; }
+  [data-theme="light"] #sidebar .sidebar-user-chip { background: rgba(0,0,0,.03) !important; border-color: rgba(0,0,0,.08) !important; }
+
   /* ──────────────────────────────────────────────────────────
-     HAMBURGER — above topbar, large tap target
+     HAMBURGER
   ────────────────────────────────────────────────────────── */
   #hamburger {
     pointer-events: auto !important;
+
     touch-action: manipulation !important;
+
     cursor: pointer !important;
+
     z-index: 610 !important;
+
     position: relative !important;
-    min-width: 44px !important;
-    min-height: 44px !important;
   }
 
   .hamburger span {
