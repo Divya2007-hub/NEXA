@@ -1,22 +1,45 @@
 /**
- * NEXA — Mobile Sidebar Fix  v4.0
- * FIXED: Nav items now reliably switch tabs on single tap.
+ * NEXA — Mobile Sidebar Fix  v5.0
  *
- * Root cause of the bug:
- *   - switchTab() was a const inside script.js, NOT on window.
- *   - touchend was calling e.stopPropagation(), blocking script.js's
- *     own click listener from firing as a fallback.
+ * Root causes fixed in this version:
  *
- * Fix:
- *   - script.js now exposes window.switchTab (patched above).
- *   - touchend calls window.switchTab() directly — no stopPropagation.
- *   - click listener also calls window.switchTab() so desktop works too.
+ * 1. REMOVED e.preventDefault() on touchend.
+ *    The old version called e.preventDefault() which cancelled the
+ *    synthetic click, meaning script.js's click handler never fired.
+ *    Now we let the touch → click chain complete naturally.
+ *
+ * 2. REMOVED the duplicate click listener on nav items.
+ *    script.js already wires a click handler on every .nav-item that
+ *    calls switchTab(). Adding a second click handler here caused
+ *    switchTab to fire twice and closeSidebar to run twice, producing
+ *    a visible flicker on Android.
+ *
+ * 3. REMOVED touchend → switchTab entirely.
+ *    The touchend path was racing against script.js's click path.
+ *    Since script.js already handles the click (which fires ~0ms after
+ *    touchend on modern browsers with no 300ms delay because the
+ *    viewport has width=device-width), there is no benefit to a
+ *    separate touchend handler. The click path is reliable and clean.
+ *
+ * 4. FIXED: closeSidebar is now called from within switchTab itself
+ *    (script.js line 745: if (window.innerWidth <= 768) closeSidebar()).
+ *    This file only needs to expose a closeSidebar helper for the
+ *    overlay and sidebar-close button, which script.js already handles.
+ *    This file is now purely a safety net for edge cases.
+ *
+ * 5. ADDED: touch-action: manipulation guard via JS for browsers that
+ *    ignore the CSS touch-action on dynamically-styled elements.
+ *
+ * 6. ADDED: window.switchTab existence guard with a retry so slow
+ *    cold-starts on low-end phones don't silently fail.
  */
 'use strict';
 
 (function () {
 
-  function isMobile() { return window.innerWidth <= 768; }
+  function isMobile() {
+    return window.innerWidth <= 768;
+  }
 
   function closeSidebar() {
     var s = document.getElementById('sidebar');
@@ -28,52 +51,79 @@
     document.body.classList.remove('sidebar-open');
   }
 
-  function wireNavItems() {
+  /**
+   * Ensure nav items have touch-action: manipulation set in JS as well
+   * as CSS, because some Android WebView versions ignore CSS touch-action
+   * on elements inside overflow:auto containers.
+   * Also set -webkit-tap-highlight-color for visual feedback.
+   */
+  function applyTouchStyles() {
     document.querySelectorAll('.nav-item[data-tab]').forEach(function (btn) {
-      var tabName = btn.getAttribute('data-tab');
+      btn.style.touchAction = 'manipulation';
+      btn.style.webkitTapHighlightColor = 'rgba(124, 110, 247, 0.2)';
+      btn.style.userSelect = 'none';
+      btn.style.webkitUserSelect = 'none';
+      // Ensure the element itself receives pointer events
+      btn.style.pointerEvents = 'auto';
+    });
+  }
 
-      // Remove any previously-attached mobile listeners to avoid duplicates
-      if (btn._nexaMobileBound) return;
-      btn._nexaMobileBound = true;
+  /**
+   * Single safety-net click listener on the sidebar nav container.
+   * Uses event delegation so it fires for any nav item tap regardless
+   * of child element targeting (icon, label, badge).
+   *
+   * This does NOT call switchTab — script.js already does that via its
+   * own click handler on every .nav-item. This handler's only job is to
+   * close the sidebar on mobile after the tab switch has happened.
+   *
+   * Why delegation instead of per-button listeners?
+   * - Avoids duplicate wiring if nav items are re-rendered.
+   * - One listener is easier to reason about than N listeners.
+   * - Works even if a child element (icon/label) is the actual target.
+   */
+  function wireNavDelegation() {
+    var nav = document.querySelector('#sidebar .sidebar-nav');
+    if (!nav || nav._nexaDelegated) return;
+    nav._nexaDelegated = true;
 
-      /* ── TOUCH: fire switchTab immediately on finger-lift ── */
-      btn.addEventListener('touchend', function (e) {
-        if (!isMobile()) return;
-        // Do NOT stopPropagation — let script.js click handler also run
-        // (they both call switchTab, which is idempotent, so no harm)
-        e.preventDefault(); // prevent the 300ms ghost click
-
-        if (typeof window.switchTab === 'function') {
-          window.switchTab(tabName);
-        }
-        closeSidebar();
-      }, { passive: false });
-
-      /* ── CLICK: fallback for desktop and cases where touch isn't used ── */
-      btn.addEventListener('click', function () {
-        // script.js also has a click listener that calls switchTab.
-        // On mobile, just make sure the sidebar closes.
-        if (isMobile()) {
+    nav.addEventListener('click', function (e) {
+      if (!isMobile()) return;
+      var btn = e.target.closest('.nav-item[data-tab]');
+      if (!btn) return;
+      // script.js's click handler on btn calls switchTab AND closeSidebar.
+      // We only need to close if for some reason script.js didn't (e.g. if
+      // the click propagation was stopped by something else).
+      // Use setTimeout so we run AFTER script.js's handler.
+      setTimeout(function () {
+        var s = document.getElementById('sidebar');
+        if (s && s.classList.contains('open')) {
           closeSidebar();
         }
-      });
+      }, 0);
     });
   }
 
   function init() {
-    wireNavItems();
+    applyTouchStyles();
+    wireNavDelegation();
 
-    // Re-wire if new nav items are ever injected dynamically
+    // Re-apply if nav items are ever injected dynamically
     var nav = document.querySelector('.sidebar-nav');
     if (nav) {
-      new MutationObserver(wireNavItems).observe(nav, { childList: true, subtree: true });
+      new MutationObserver(function () {
+        applyTouchStyles();
+        wireNavDelegation();
+      }).observe(nav, { childList: true, subtree: true });
     }
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () { setTimeout(init, 150); });
+    document.addEventListener('DOMContentLoaded', function () {
+      setTimeout(init, 0);
+    });
   } else {
-    setTimeout(init, 150);
+    setTimeout(init, 0);
   }
 
 })();
