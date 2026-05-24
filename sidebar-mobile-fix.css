@@ -1,153 +1,109 @@
 /* ──────────────────────────────────────────────────────────
-   THEME SAFE COLORS
-   Works properly in BOTH dark and light mode
+   NAV ITEMS — FINAL MOBILE CLICKABLE VERSION
 ────────────────────────────────────────────────────────── */
-
-/* ===== DARK THEME (DEFAULT) ===== */
-
-#sidebar {
-  background: #0a0a14 !important;
-}
 
 #sidebar .nav-item {
   color: #b8c2d3 !important;
+  background: transparent !important;
+
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+
+  min-height: 48px !important;
+  padding: 10px 12px !important;
+
+  border-radius: 8px !important;
+
+  cursor: pointer !important;
+  pointer-events: auto !important;
+
+  touch-action: manipulation !important;
+  -webkit-tap-highlight-color: rgba(124,110,247,0.2) !important;
+
+  user-select: none !important;
+  -webkit-user-select: none !important;
+
+  position: relative !important;
+  z-index: 2 !important;
+
+  font-size: 0.85rem !important;
+  font-weight: 500 !important;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    transform 0.1s ease !important;
 }
 
+/* ACTIVE */
 #sidebar .nav-item.active {
-  background: rgba(124, 110, 247, 0.18) !important;
+  background: rgba(124,110,247,0.18) !important;
   color: #c7bcff !important;
 }
 
-#sidebar .nav-item:active,
-#sidebar .nav-item:focus {
-  background: rgba(124, 110, 247, 0.14) !important;
-  color: #ffffff !important;
+/* HOVER */
+#sidebar .nav-item:hover {
+  background: rgba(124,110,247,0.08) !important;
 }
 
-/* Brand */
-#sidebar .brand-name {
-  color: #ffffff !important;
+/* TAP EFFECT */
+#sidebar .nav-item:active {
+  transform: scale(0.98);
+  background: rgba(124,110,247,0.14) !important;
 }
 
-#sidebar .brand-sub {
-  color: #98a4b8 !important;
+/* ICON */
+#sidebar .nav-icon {
+  width: 22px !important;
+  flex-shrink: 0 !important;
+  text-align: center !important;
+
+  color: inherit !important;
+  opacity: 1 !important;
+
+  font-size: 0.95rem !important;
+
+  /* IMPORTANT FIX */
+  pointer-events: auto !important;
 }
 
-/* Stats */
-#sidebar .sidebar-stats {
-  background: rgba(255, 255, 255, 0.05) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+/* LABEL */
+#sidebar .nav-label {
+  flex: 1 !important;
+  color: inherit !important;
+
+  /* IMPORTANT FIX */
+  pointer-events: auto !important;
 }
 
-#sidebar .ss-value {
-  color: #ffffff !important;
+/* BADGE */
+#sidebar .nav-badge {
+  pointer-events: auto !important;
 }
 
-#sidebar .ss-label {
-  color: #9aa6b8 !important;
-}
-
-/* Footer */
-#sidebar .sidebar-footer {
-  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
-}
-
-/* User chip */
-#sidebar .sidebar-user-chip {
-  background: rgba(255, 255, 255, 0.04) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-}
-
-#sidebar .suc-name {
-  color: #ffffff !important;
-}
-
-#sidebar .suc-email {
-  color: #94a3b8 !important;
-}
-
-/* Topbar */
-.topbar {
-  background: #0d0f14 !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
-}
-
-/* Hamburger */
-.hamburger span {
-  background: #d1d5db !important;
-}
-
-/* ===== LIGHT THEME ===== */
-
-[data-theme="light"] #sidebar {
-  background: #f7f8fb !important;
-  border-right: 1px solid rgba(0, 0, 0, 0.08) !important;
-}
+/* ──────────────────────────────────────────────────────────
+   LIGHT THEME
+────────────────────────────────────────────────────────── */
 
 [data-theme="light"] #sidebar .nav-item {
   color: #374151 !important;
 }
 
 [data-theme="light"] #sidebar .nav-item.active {
-  background: rgba(124, 110, 247, 0.12) !important;
+  background: rgba(124,110,247,0.12) !important;
   color: #5b4ce6 !important;
 }
 
-[data-theme="light"] #sidebar .nav-item:active,
-[data-theme="light"] #sidebar .nav-item:focus {
-  background: rgba(124, 110, 247, 0.10) !important;
-  color: #4338ca !important;
+[data-theme="light"] #sidebar .nav-item:hover {
+  background: rgba(124,110,247,0.06) !important;
 }
 
-/* Brand */
-[data-theme="light"] #sidebar .brand-name {
-  color: #111827 !important;
+[data-theme="light"] #sidebar .nav-item:active {
+  background: rgba(124,110,247,0.10) !important;
 }
 
-[data-theme="light"] #sidebar .brand-sub {
-  color: #6b7280 !important;
-}
-
-/* Stats */
-[data-theme="light"] #sidebar .sidebar-stats {
-  background: rgba(0, 0, 0, 0.03) !important;
-  border: 1px solid rgba(0, 0, 0, 0.06) !important;
-}
-
-[data-theme="light"] #sidebar .ss-value {
-  color: #111827 !important;
-}
-
-[data-theme="light"] #sidebar .ss-label {
-  color: #6b7280 !important;
-}
-
-/* Footer */
-[data-theme="light"] #sidebar .sidebar-footer {
-  border-top: 1px solid rgba(0, 0, 0, 0.06) !important;
-}
-
-/* User chip */
-[data-theme="light"] #sidebar .sidebar-user-chip {
-  background: rgba(0, 0, 0, 0.03) !important;
-  border: 1px solid rgba(0, 0, 0, 0.06) !important;
-}
-
-[data-theme="light"] #sidebar .suc-name {
-  color: #111827 !important;
-}
-
-[data-theme="light"] #sidebar .suc-email {
-  color: #6b7280 !important;
-}
-
-/* Topbar */
-[data-theme="light"] .topbar {
-  background: #f4f5f8 !important;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
-}
-
-/* Hamburger */
-[data-theme="light"] .hamburger span {
-  background: #4b5563 !important;
+[data-theme="light"] #sidebar .nav-icon,
+[data-theme="light"] #sidebar .nav-label {
+  color: inherit !important;
 }
