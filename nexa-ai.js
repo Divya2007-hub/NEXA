@@ -120,7 +120,25 @@
   /* ═══════════════════════════════════════════════════════════
      UI — TOGGLE / OPEN / CLOSE
   ═══════════════════════════════════════════════════════════ */
-  function _toggle() { _open ? _close() : _openPanel(); }
+  function _isGuest() {
+    return document.body.classList.contains('guest-mode');
+  }
+
+  function _toggle() {
+    if (_isGuest()) {
+      /* Show auth modal — same function script.js uses */
+      if (typeof window.showAuthModal === 'function') window.showAuthModal();
+      else {
+        const gate = document.getElementById('auth-gate');
+        if (gate) gate.classList.remove('auth-gate-hidden');
+      }
+      if (typeof window.showToast === 'function') {
+        window.showToast('Sign in to use Nexa AI ✦', 't-info', 2800);
+      }
+      return;
+    }
+    _open ? _close() : _openPanel();
+  }
 
   function _openPanel() {
     _open = true;
@@ -621,15 +639,16 @@
   }
 
   /* ═══════════════════════════════════════════════════════════
-     TAB VISIBILITY — show FAB only on Tasks tab
+     TAB VISIBILITY — show FAB only on Tasks tab + signed-in
   ═══════════════════════════════════════════════════════════ */
   function _syncVisibility() {
     const fab = document.getElementById('nexa-ai-btn');
     if (!fab) return;
-    const tasksPanel  = document.getElementById('tab-tasks');
-    const onTasksTab  = tasksPanel && tasksPanel.classList.contains('active');
-    fab.style.display = onTasksTab ? '' : 'none';
-    if (!onTasksTab && _open) _close();
+    const tasksPanel = document.getElementById('tab-tasks');
+    const onTasksTab = tasksPanel && tasksPanel.classList.contains('active');
+    /* Hide FAB entirely for guests */
+    fab.style.display = (onTasksTab && !_isGuest()) ? '' : 'none';
+    if ((!onTasksTab || _isGuest()) && _open) _close();
   }
 
   function _watchTabs() {
@@ -642,6 +661,11 @@
         attributes: true,
         attributeFilter: ['class'],
       });
+    });
+    /* Re-sync when auth state changes (sign-in / sign-out removes guest-mode class) */
+    new MutationObserver(_syncVisibility).observe(document.body, {
+      attributes: true,
+      attributeFilter: ['class'],
     });
     _syncVisibility();
   }
