@@ -3743,7 +3743,7 @@ body.guest-mode .toast-container { bottom: 130px; }
   .guest-banner-text {
     font-size: .72rem !important;
     white-space: normal !important;
-    min-width: 480px;
+    min-width: 0;
     flex: 1 !important;
   }
   .guest-banner-text span { display: none !important; }
@@ -3815,7 +3815,7 @@ body.guest-mode .toast-container { bottom: 130px; }
     width: 100% !important;
   }
   .cal-week-grid {
-    min-width: 480px !important;
+    min-width: auto !important;
   }
   .cal-panels {
     grid-template-columns: 1fr !important;
