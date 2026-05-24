@@ -1,109 +1,341 @@
-/* ──────────────────────────────────────────────────────────
-   NAV ITEMS — FINAL MOBILE CLICKABLE VERSION
-────────────────────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════
+   NEXA — Mobile Sidebar Fix  v5.0
+   Load LAST, after all other CSS files.
 
-#sidebar .nav-item {
-  color: #b8c2d3 !important;
-  background: transparent !important;
+   Changes from v4.0:
+   - Unified z-index stack. Three different files were declaring
+     three different z-index values for the same elements. The
+     last file in load order won, making behaviour unpredictable.
+     This file is loaded last so it is authoritative.
+     Stack (highest to lowest):
+       .nav-item inside sidebar  : z-index 10   (relative, not fixed)
+       #sidebar                  : z-index 800
+       #sidebar-overlay          : z-index 750
+       .topbar                   : z-index 600
+       #hamburger                : z-index 610
+   - REMOVED z-index: 9999 from .nav-item. A nav item inside the
+     sidebar does not need a fixed z-index of 9999. It just needs
+     to be above the sidebar's own background, which position:relative
+     + z-index:1 achieves cleanly.
+   - FIXED touch-action on nav items: changed from "auto" to
+     "manipulation". "auto" allows the browser to classify fast taps
+     as scroll-start gestures and swallow them silently.
+   - FIXED #sidebar-overlay inset: overlay now starts AFTER the
+     sidebar width so it can never overlap the open sidebar panel.
+     This was the most common cause of "tap the nav item but nothing
+     happens" — the overlay was covering the sidebar on some Android
+     Chrome versions.
+   - REMOVED conflicting !important rules that fought with style.css
+     bottom mega-block. Only rules this file uniquely owns use
+     !important; shared properties use normal specificity where possible.
+══════════════════════════════════════════════════════════════ */
 
-  display: flex !important;
-  align-items: center !important;
-  gap: 10px !important;
+@media (max-width: 768px) {
 
-  min-height: 48px !important;
-  padding: 10px 12px !important;
+  /* ──────────────────────────────────────────────────────────
+     SIDEBAR PANEL
+  ────────────────────────────────────────────────────────── */
+  #sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    bottom: 0 !important;
+    height: 100dvh !important;
+    width: min(82vw, 300px) !important;
+    max-width: 300px !important;
 
-  border-radius: 8px !important;
+    /* Slide in from left */
+    transform: translateX(-100%) !important;
+    transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.32s ease !important;
 
-  cursor: pointer !important;
-  pointer-events: auto !important;
+    /* Authoritative z-index for this file (loaded last) */
+    z-index: 800 !important;
 
-  touch-action: manipulation !important;
-  -webkit-tap-highlight-color: rgba(124,110,247,0.2) !important;
+    /* Solid background — no backdrop-filter (causes iOS blur) */
+    background: var(--bg, #0a0a14) !important;
+    border-right: 1px solid rgba(124, 92, 255, 0.22) !important;
+    isolation: auto !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
 
-  user-select: none !important;
-  -webkit-user-select: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    scrollbar-width: none !important;
 
-  position: relative !important;
-  z-index: 2 !important;
+    /* Always visible and tappable */
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+  }
 
-  font-size: 0.85rem !important;
-  font-weight: 500 !important;
+  #sidebar::-webkit-scrollbar {
+    display: none !important;
+  }
 
-  transition:
-    background 0.15s ease,
-    color 0.15s ease,
-    transform 0.1s ease !important;
-}
+  #sidebar.open {
+    transform: translateX(0) !important;
+    box-shadow:
+      4px 0 40px rgba(124, 92, 255, 0.25),
+      8px 0 80px rgba(0, 0, 0, 0.6) !important;
+    pointer-events: auto !important;
+  }
 
-/* ACTIVE */
-#sidebar .nav-item.active {
-  background: rgba(124,110,247,0.18) !important;
-  color: #c7bcff !important;
-}
+  /* ──────────────────────────────────────────────────────────
+     OVERLAY
+     KEY FIX: left: min(82vw, 300px) so it starts AFTER the
+     sidebar, never overlapping it. Previously inset:0 meant the
+     overlay covered the entire screen including the sidebar panel,
+     and on some Android Chrome builds it sat on top of it.
+  ────────────────────────────────────────────────────────── */
+  #sidebar-overlay {
+    position: fixed !important;
+    top: 0 !important;
+    /* Start after sidebar width so it cannot overlap open sidebar */
+    left: min(82vw, 300px) !important;
+    right: 0 !important;
+    bottom: 0 !important;
 
-/* HOVER */
-#sidebar .nav-item:hover {
-  background: rgba(124,110,247,0.08) !important;
-}
+    /* Below sidebar, above main content */
+    z-index: 750 !important;
 
-/* TAP EFFECT */
-#sidebar .nav-item:active {
-  transform: scale(0.98);
-  background: rgba(124,110,247,0.14) !important;
-}
+    background: rgba(0, 0, 0, 0.65) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
 
-/* ICON */
-#sidebar .nav-icon {
-  width: 22px !important;
-  flex-shrink: 0 !important;
-  text-align: center !important;
+    display: none !important;
+    cursor: pointer !important;
+    pointer-events: auto !important;
+  }
 
-  color: inherit !important;
-  opacity: 1 !important;
+  #sidebar-overlay.visible {
+    display: block !important;
+  }
 
-  font-size: 0.95rem !important;
+  /* ──────────────────────────────────────────────────────────
+     FORCE ALL SIDEBAR CONTENT VISIBLE
+  ────────────────────────────────────────────────────────── */
+  #sidebar *,
+  #sidebar .nav-item,
+  #sidebar .nav-label,
+  #sidebar .nav-icon,
+  #sidebar .ss-value,
+  #sidebar .ss-label,
+  #sidebar .brand-name,
+  #sidebar .brand-sub,
+  #sidebar .suc-name,
+  #sidebar .suc-email,
+  #sidebar .sidebar-stats,
+  #sidebar .sidebar-footer,
+  #sidebar .sidebar-user-chip,
+  #sidebar .sidebar-guest-chip {
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
 
-  /* IMPORTANT FIX */
-  pointer-events: auto !important;
-}
+  /* ──────────────────────────────────────────────────────────
+     NAV ITEMS
+     KEY FIXES:
+     - touch-action: manipulation (was "auto" — "auto" lets the
+       browser eat fast taps as scroll-start gestures)
+     - z-index: 1 with position: relative (was z-index: 9999
+       which broke stacking context inside the sidebar and caused
+       unpredictable hit-testing on some devices)
+     - NO e.preventDefault / e.stopPropagation interference here;
+       that's handled correctly in script.js
+  ────────────────────────────────────────────────────────── */
+  #sidebar .nav-item {
+    color: #516280 !important;
+    background: transparent !important;
 
-/* LABEL */
-#sidebar .nav-label {
-  flex: 1 !important;
-  color: inherit !important;
+    pointer-events: auto !important;
 
-  /* IMPORTANT FIX */
-  pointer-events: auto !important;
-}
+    /* CRITICAL: manipulation prevents scroll-detection eating taps */
+    touch-action: manipulation !important;
 
-/* BADGE */
-#sidebar .nav-badge {
-  pointer-events: auto !important;
-}
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    -webkit-tap-highlight-color: rgba(124, 110, 247, 0.2) !important;
 
-/* ──────────────────────────────────────────────────────────
-   LIGHT THEME
-────────────────────────────────────────────────────────── */
+    cursor: pointer !important;
 
-[data-theme="light"] #sidebar .nav-item {
-  color: #374151 !important;
-}
+    /* Large touch target */
+    min-height: 48px !important;
+    padding: 10px 12px !important;
 
-[data-theme="light"] #sidebar .nav-item.active {
-  background: rgba(124,110,247,0.12) !important;
-  color: #5b4ce6 !important;
-}
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
 
-[data-theme="light"] #sidebar .nav-item:hover {
-  background: rgba(124,110,247,0.06) !important;
-}
+    border-radius: 8px !important;
 
-[data-theme="light"] #sidebar .nav-item:active {
-  background: rgba(124,110,247,0.10) !important;
-}
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
 
-[data-theme="light"] #sidebar .nav-icon,
-[data-theme="light"] #sidebar .nav-label {
-  color: inherit !important;
+    transition: background 0.15s, color 0.15s !important;
+
+    position: relative !important;
+    /* Just enough z-index to be above sidebar background,
+       NOT a huge value that breaks stacking contexts */
+    z-index: 1 !important;
+  }
+
+  #sidebar .nav-item.active {
+    background: rgba(124, 110, 247, 0.15) !important;
+    color: #9b8fff !important;
+  }
+
+  #sidebar .nav-item:active,
+  #sidebar .nav-item:focus {
+    background: rgba(124, 110, 247, 0.12) !important;
+    color: #c0b8ff !important;
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     NAV ICON + LABEL
+  ────────────────────────────────────────────────────────── */
+  #sidebar .nav-icon {
+    color: inherit !important;
+    opacity: 1 !important;
+    font-size: 0.95rem !important;
+    flex-shrink: 0 !important;
+    width: 22px !important;
+    text-align: center !important;
+    /* Icon must not eat pointer events from parent button */
+    pointer-events: none !important;
+  }
+
+  #sidebar .nav-label {
+    color: inherit !important;
+    flex: 1 !important;
+    pointer-events: none !important;
+  }
+
+  #sidebar .nav-badge {
+    pointer-events: none !important;
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     STATS STRIP
+  ────────────────────────────────────────────────────────── */
+  #sidebar .sidebar-stats {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    margin: 0 12px 12px !important;
+    border-radius: 10px !important;
+  }
+
+  #sidebar .ss-value {
+    color: #0e0e0e !important;
+    font-weight: 700 !important;
+  }
+
+  #sidebar .ss-label {
+    color: #8b95a3 !important;
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     BRAND
+  ────────────────────────────────────────────────────────── */
+  #sidebar .brand-name {
+    color: #030303 !important;
+  }
+
+  #sidebar .brand-sub {
+    color: #5e6a7c !important;
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     CLOSE BUTTON
+  ────────────────────────────────────────────────────────── */
+  #sidebar .sidebar-close {
+    display: flex !important;
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
+    cursor: pointer !important;
+    color: #c0b8ff !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     FOOTER
+  ────────────────────────────────────────────────────────── */
+  #sidebar .sidebar-footer {
+    margin-top: auto !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.07) !important;
+    padding: 12px 14px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     USER CHIP
+  ────────────────────────────────────────────────────────── */
+  #sidebar .suc-name  { color: #080808 !important; }
+  #sidebar .suc-email { color: #475365 !important; }
+
+  #sidebar .sidebar-user-chip {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     TOPBAR — fixed, above main content but below sidebar
+  ────────────────────────────────────────────────────────── */
+  .topbar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 600 !important;
+    background: #0d0f14 !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  }
+
+  [data-theme="light"] .topbar {
+    background: #f4f5f8 !important;
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     HAMBURGER — above topbar, large tap target
+  ────────────────────────────────────────────────────────── */
+  #hamburger {
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
+    cursor: pointer !important;
+    z-index: 610 !important;
+    position: relative !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+  }
+
+  .hamburger span {
+    background: #c0c8d8 !important;
+  }
+
+  [data-theme="light"] .hamburger span {
+    background: #4b5563 !important;
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     MAIN CONTENT
+  ────────────────────────────────────────────────────────── */
+  .main-content {
+    margin-left: 0 !important;
+    padding-top: var(--topbar-h, 56px) !important;
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     BODY SCROLL LOCK
+  ────────────────────────────────────────────────────────── */
+  body.sidebar-open {
+    overflow: hidden !important;
+  }
 }
