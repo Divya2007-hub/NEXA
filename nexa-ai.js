@@ -646,9 +646,15 @@
     if (!fab) return;
     const tasksPanel = document.getElementById('tab-tasks');
     const onTasksTab = tasksPanel && tasksPanel.classList.contains('active');
-    /* Hide FAB entirely for guests */
-    fab.style.display = (onTasksTab && !_isGuest()) ? '' : 'none';
-    if ((!onTasksTab || _isGuest()) && _open) _close();
+    /* Show FAB on tasks tab for everyone — guests see it but it's locked */
+    fab.style.display = onTasksTab ? '' : 'none';
+    /* Apply locked visual for guests */
+    if (_isGuest()) {
+      fab.classList.add('ai-btn-locked');
+    } else {
+      fab.classList.remove('ai-btn-locked');
+    }
+    if (!onTasksTab && _open) _close();
   }
 
   function _watchTabs() {

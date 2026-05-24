@@ -336,3 +336,28 @@
     height: 480px;
   }
 }
+/* ── Guest mode lock: show button but visually locked ── */
+#nexa-ai-btn.ai-btn-locked {
+  opacity: 0.55;
+  cursor: not-allowed !important;
+  filter: grayscale(0.3);
+  position: relative;
+}
+#nexa-ai-btn.ai-btn-locked::after {
+  content: '🔒';
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  font-size: 0.5rem;
+  width: 16px;
+  height: 16px;
+  background: var(--sf);
+  border: 1px solid var(--bd2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  pointer-events: none;
+  box-shadow: var(--shadow-s);
+}
