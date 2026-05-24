@@ -43,8 +43,8 @@
         e.stopPropagation();
 
         // Switch tab immediately — no delay
-        if (typeof window.switchTab === 'function') {
-          window.switchTab(tabName);
+        if (typeof switchTab === 'function') {
+          switchTab(tabName);
         }
 
         // Close sidebar immediately — no setTimeout
