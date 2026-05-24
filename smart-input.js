@@ -700,11 +700,18 @@ Rules:
   function _trackInputBarHeight() {
     const bar = document.getElementById('input-bar');
     if (!bar) return;
-    const update = () => {
-      document.documentElement.style.setProperty(
-        '--input-bar-h',
-        bar.offsetHeight + 'px'
-      );
+    const update = (entries) => {
+      let h;
+      if (entries && entries[0] && entries[0].borderBoxSize && entries[0].borderBoxSize[0]) {
+        h = entries[0].borderBoxSize[0].blockSize;
+      } else if (entries && entries[0] && entries[0].contentRect) {
+        h = entries[0].contentRect.height;
+      } else {
+        h = bar.offsetHeight;
+      }
+      requestAnimationFrame(() => {
+        document.documentElement.style.setProperty('--input-bar-h', h + 'px');
+      });
     };
     update();
     new ResizeObserver(update).observe(bar);

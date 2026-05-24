@@ -3367,10 +3367,15 @@ body.guest-mode .toast-container { bottom: 130px; }
   transition: border-color .18s, background .18s;
   min-height: 32px;
 }
-.ib-pill:hover,
 .ib-pill:focus-within {
   border-color: var(--ac);
   background: var(--sf3);
+}
+@media (hover: hover) {
+  .ib-pill:hover {
+    border-color: var(--ac);
+    background: var(--sf3);
+  }
 }
 
 .ib-pill-icon {
@@ -3435,10 +3440,15 @@ body.guest-mode .toast-container { bottom: 130px; }
   background: #f0f2f7;
   border-color: rgba(0,0,0,.1);
 }
-[data-theme="light"] .ib-pill:hover,
 [data-theme="light"] .ib-pill:focus-within {
   background: #e8eaf0;
   border-color: var(--ac);
+}
+@media (hover: hover) {
+  [data-theme="light"] .ib-pill:hover {
+    background: #e8eaf0;
+    border-color: var(--ac);
+  }
 }
 [data-theme="light"] .ib-pill-input,
 [data-theme="light"] .ib-pill-select {
