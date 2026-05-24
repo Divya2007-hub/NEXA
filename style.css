@@ -3895,10 +3895,13 @@ body.guest-mode .toast-container { bottom: 130px; }
     /* Stacking — above overlay (650) and topbar (600) */
     z-index: 800 !important;
 
-    /* Visual: opaque dark glass, neon glow on right edge */
-    background: rgba(10, 10, 20, 0.97) !important;
+    /* Visual: fully opaque — no isolation, no backdrop-filter */
+    background: #0a0a14 !important;
     border-right: 1px solid rgba(124, 92, 255, 0.22) !important;
     box-shadow: none !important;
+    isolation: auto !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
 
     /* Layout */
     display: flex !important;
@@ -3906,7 +3909,6 @@ body.guest-mode .toast-container { bottom: 130px; }
     overflow-y: auto !important;
     overflow-x: hidden !important;
     scrollbar-width: none !important;
-    isolation: isolate !important;
   }
   #sidebar::-webkit-scrollbar { display: none !important; }
 
@@ -3925,8 +3927,8 @@ body.guest-mode .toast-container { bottom: 130px; }
     inset: 0 !important;
     z-index: 750 !important;
     background: rgba(0, 0, 0, 0.65) !important;
-    backdrop-filter: blur(4px) !important;
-    -webkit-backdrop-filter: blur(4px) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
     display: none !important;
     cursor: pointer !important;
   }
