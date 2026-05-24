@@ -9,88 +9,82 @@ Built with a clean futuristic UI, responsive mobile experience, dark/light theme
 # ✨ Features
 
 ## 📋 Task Management
-
-* Create, edit, and delete tasks
-* Organize daily workflow
-* Track completed tasks
-* Interactive task interface
+- Create, edit, and delete tasks  
+- Organize daily workflow  
+- Track completed tasks  
+- Interactive task interface  
 
 ## 🎯 Focus Mode
-
-* Dedicated focus workspace
-* Productivity timer
-* Distraction-free environment
-* Session tracking
+- Dedicated focus workspace  
+- Productivity timer  
+- Distraction-free environment  
+- Session tracking  
 
 ## 📝 Notes System
-
-* Quick notes support
-* Clean note organization
-* Fast access interface
+- Quick notes support  
+- Clean note organization  
+- Fast access interface  
 
 ## 📅 Calendar & Planning
-
-* Daily productivity planning
-* Organized scheduling system
-* Better workflow management
+- Daily productivity planning  
+- Organized scheduling system  
+- Better workflow management  
 
 ## 🌙 Dark & Light Theme
-
-* Fully responsive theme switching
-* Theme-safe UI colors
-* Mobile optimized design
+- Fully responsive theme switching  
+- Theme-safe UI colors  
+- Mobile optimized design  
 
 ## 📱 Mobile Responsive
-
-* Fully optimized sidebar navigation
-* Smooth mobile interactions
-* Touch-friendly interface
-* Responsive layout for all devices
+- Fully optimized sidebar navigation  
+- Smooth mobile interactions  
+- Touch-friendly interface  
+- Responsive layout for all devices  
 
 ## ⚡ Progressive Web App (PWA)
-
-* Installable like a mobile app
-* Offline-ready experience
-* Fast loading performance
-* App-style interface
+- Installable like a mobile app  
+- Offline-ready experience  
+- Fast loading performance  
+- App-style interface  
 
 ---
 
 # 🛠️ Tech Stack
-
-* HTML5
-* CSS3
-* JavaScript
-* PWA (Progressive Web App)
-* Vercel Deployment
+- HTML5  
+- CSS3  
+- JavaScript  
+- PWA (Progressive Web App)  
+- Vercel Deployment  
 
 ---
 
 # 📸 Screenshots
 
-Add screenshots of your app here.
+Here’s a preview of NEXA:
 
-Example:
-
-```md
+## Dashboard
 ![Dashboard](screenshots/dashboard.png)
-```
+
+## Tasks Page
+![Tasks](screenshots/tasks.png)
+
+## Focus Mode
+![Focus](screenshots/focus.png)
 
 ---
 
 # 🚀 Live Demo
 
-🔗 [https://nexa-kappa-drab.vercel.app/](https://nexa-sandy-five.vercel.app/)
+👉 https://nexa-sandy-five.vercel.app/
 
 ---
 
 # 📦 Installation
 
 ## Clone the repository
-
 ```bash
 git clone https://github.com/Divya2007-hub/NEXA.git
-```
+````
 
 ## Open project folder
 
@@ -103,8 +97,7 @@ cd NEXA
 You can run the project using:
 
 * VS Code Live Server
-  OR
-* Any local development server
+* OR any local development server
 
 Example:
 
@@ -118,15 +111,15 @@ npx serve
 
 ## On Mobile
 
-1. Open the website in Chrome or Samsung Internet
-2. Tap “Install App”
-3. Launch NEXA like a native app
+* Open the website in Chrome or Samsung Internet
+* Tap “Install App”
+* Launch NEXA like a native app
 
 ## On Desktop
 
-1. Open the website in Chrome/Edge
-2. Click the install icon in the address bar
-3. Install NEXA
+* Open the website in Chrome/Edge
+* Click the install icon in the address bar
+* Install NEXA
 
 ---
 
@@ -182,4 +175,6 @@ This project is licensed under the MIT License.
 
 # ⭐ Support
 
-If you like this project, consider giving it a star on GitHub ⭐
+If you like this project, consider giving it a star ⭐
+
+```
