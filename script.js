@@ -750,14 +750,11 @@ const switchTab = name => {
 };
 
 document.querySelectorAll('.nav-item').forEach(btn => {
-  /* Use both click and touchend so mobile taps register reliably.
-     stopPropagation prevents the tap from reaching the overlay. */
   const onNav = e => {
     e.stopPropagation();
     switchTab(btn.dataset.tab);
   };
-  btn.addEventListener('click',    onNav);
-  btn.addEventListener('touchend', onNav, { passive: true });
+  btn.addEventListener('click', onNav);
 });
 
 /* ═══════════════════════════════════════════
