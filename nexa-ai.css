@@ -344,9 +344,9 @@
   /* position stays fixed — do NOT override */
 }
 
-/* ── Guest mode: raise button above the preview banner + input bar ── */
+/* ── Guest mode: raise button above preview banner + input bar ── */
 body.guest-mode #nexa-ai-btn {
-  bottom: 220px;
+  bottom: 190px;
 }
 @media (max-width: 768px) {
   body.guest-mode #nexa-ai-btn {
