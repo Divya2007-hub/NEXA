@@ -520,6 +520,16 @@ body {
     font-size: .75rem !important;
     line-height: 1.45 !important;
   }
+
+  /* FIX TOAST OVERFLOW ON MOBILE */
+.toast {
+  min-width: 0 !important;
+}
+.toast-msg {
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+}
+
   body.guest-mode .toast-container {
     bottom: 195px !important;
   }
